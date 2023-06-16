@@ -2,7 +2,7 @@
 //  ToDoListTests.swift
 //  ToDoListTests
 //
-//  Created by Настя Лазарева on 15.06.2023.
+//  
 //
 
 import XCTest
@@ -46,7 +46,6 @@ final class ToDoListTests: XCTestCase {
     func testJsonParseWithoutRequiredFields() throws {
         let json : [String:Any] =
         [
-            "id" : "testId",
             "importance" : "important",
             "deadline" : "15 июня 23:59",
             "isDone" : false,
@@ -116,7 +115,7 @@ final class ToDoListTests: XCTestCase {
         let todoItem = TodoItem(id: "testId",text: "testText", importance: .important, deadline: Formatter.date.date(from: "15 июня 23:59"), isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!, dateOfChange: Formatter.date.date(from: "15 июня 23:30"))
         
         let result : [String : Any] = todoItem.json as! [String: Any]
-       
+        
         XCTAssertEqual(result["id"] as! String, "testId", "преобразовние id")
         XCTAssertEqual(result["text"] as! String, "testText", "преобразовние текста задачи")
         XCTAssertEqual(result["importance"] as! String, "important", "преобразовние важности задачи")
@@ -130,7 +129,7 @@ final class ToDoListTests: XCTestCase {
         let todoItem = TodoItem(id: "testId",text: "testText", importance: .regular, deadline: Formatter.date.date(from: "15 июня 23:59"), isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!, dateOfChange: Formatter.date.date(from: "15 июня 23:30"))
         
         let result : [String : Any] = todoItem.json as! [String: Any]
-       
+        
         XCTAssertEqual(result["id"] as! String, "testId", "преобразовние id")
         XCTAssertEqual(result["text"] as! String, "testText", "преобразовние текста задачи")
         XCTAssertEqual(result["importance"] as? String, nil, "преобразовние важности задачи")
@@ -144,7 +143,7 @@ final class ToDoListTests: XCTestCase {
         let todoItem = TodoItem(id: "testId",text: "testText", importance: .important, isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!)
         
         let result : [String : Any] = todoItem.json as! [String: Any]
-       
+        
         XCTAssertEqual(result["id"] as! String, "testId", "преобразовние id")
         XCTAssertEqual(result["text"] as! String, "testText", "преобразовние текста задачи")
         XCTAssertEqual(result["importance"] as! String, "important", "преобразовние важности задачи")
@@ -175,10 +174,8 @@ final class ToDoListTests: XCTestCase {
     
     
     func testCSVParsingWithoutImportance(){
-        let todoItem = TodoItem(id: "testId",text: "testText", importance: .important, deadline: Formatter.date.date(from: "15 июня 23:59"), isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!, dateOfChange: Formatter.date.date(from: "15 июня 23:30"))
+        let todoItem = TodoItem(id: "testId",text: "testText", importance: .regular, deadline: Formatter.date.date(from: "15 июня 23:59"), isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!, dateOfChange: Formatter.date.date(from: "15 июня 23:30"))
         
-        
-        // надо ли сохранять важность??
         let inputCSV = "testText;false;15 июня 23:00;testId;;15 июня 23:59;15 июня 23:30"
         
         guard let result = TodoItem.parse(csv: inputCSV) else{
@@ -193,6 +190,55 @@ final class ToDoListTests: XCTestCase {
         XCTAssertEqual(result.creationDate, todoItem.creationDate, "преобразовние даты создания задачи")
         XCTAssertEqual(result.dateOfChange, todoItem.dateOfChange, "преобразовние даты создания задачи")
         XCTAssertEqual(result.isDone, todoItem.isDone, "преобразовние статуса готовности задачи")
+    }
+    
+    func testCSVParsingWithoutOptionalFields(){
+        let todoItem = TodoItem(id: "testId",text: "testText", importance: .regular, isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!)
+        
+        let inputCSV = "testText;false;15 июня 23:00;testId;;;"
+        
+        guard let result = TodoItem.parse(csv: inputCSV) else{
+            XCTFail("Ошибка преобразования csv в объект")
+            return
+        }
+        
+        XCTAssertEqual(result.id, todoItem.id, "преобразовние id")
+        XCTAssertEqual(result.text, todoItem.text, "преобразовние текста задачи")
+        XCTAssertEqual(result.importance, todoItem.importance, "преобразовние важности задачи")
+        XCTAssertEqual(result.deadline, todoItem.deadline, "преобразовние даты дедлайна задачи")
+        XCTAssertEqual(result.creationDate, todoItem.creationDate, "преобразовние даты создания задачи")
+        XCTAssertEqual(result.dateOfChange, todoItem.dateOfChange, "преобразовние даты создания задачи")
+        XCTAssertEqual(result.isDone, todoItem.isDone, "преобразовние статуса готовности задачи")
+    }
+    
+    func testGettingCSVWithAllFields(){
+        let todoItem = TodoItem(id: "testId",text: "testText", importance: .important, deadline: Formatter.date.date(from: "15 июня 23:59"), isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!, dateOfChange: Formatter.date.date(from: "15 июня 23:30"))
+        
+        let result = todoItem.csv
+        
+        let expected = "testText;false;15 июня 23:00;testId;important;15 июня 23:59;15 июня 23:30"
+        
+        XCTAssertEqual(result, expected, "преобразование объекта в csv")
+    }
+    
+    func testGettingCSVWithoutImportance(){
+        let todoItem = TodoItem(id: "testId",text: "testText", importance: .regular, deadline: Formatter.date.date(from: "15 июня 23:59"), isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!, dateOfChange: Formatter.date.date(from: "15 июня 23:30"))
+        
+        let result = todoItem.csv
+        
+        let expected = "testText;false;15 июня 23:00;testId;;15 июня 23:59;15 июня 23:30"
+        
+        XCTAssertEqual(result, expected, "преобразование объекта в csv c обычной сложностью")
+    }
+    
+    func testGettingCSVWithoutOprionalFields(){
+        let todoItem = TodoItem(id: "testId",text: "testText", importance: .regular, isDone: false, creationDate: Formatter.date.date(from: "15 июня 23:00")!)
+        
+        let result = todoItem.csv
+        
+        let expected = "testText;false;15 июня 23:00;testId;;;"
+        
+        XCTAssertEqual(result, expected, "преобразование объекта в csv без опциональных полей")
     }
     
 }

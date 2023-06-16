@@ -7,6 +7,7 @@
 
 import Foundation
 
+// Пока что ошибки печатаются в консоль, но дальше со следующими дз будут пробрасоваться ошибки
 class FileCache{
     private(set) var todoItemCollection : [TodoItem] = []
     

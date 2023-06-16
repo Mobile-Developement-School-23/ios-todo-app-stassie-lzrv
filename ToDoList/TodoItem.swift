@@ -14,8 +14,6 @@ enum Importance : String, Codable{
 }
 
 struct TodoItem : Codable {
-    
-    
     let id: String
     let text: String
     let importance: Importance
@@ -33,19 +31,20 @@ struct TodoItem : Codable {
         self.creationDate = creationDate
         self.dateOfChange = dateOfChange
     }
-    
-    
 }
 
 
 extension TodoItem {
     static func parse(json: Any) -> TodoItem? {
+        // Как мне сказал ментор, в parse попадает только та строка, которую мы получили как item.json, поэтому  обязательные поля уже будут заполнены
+        // Обязательнеы поля - text, isDone, creationDate и id
         guard let dict = json as? [String : Any],
               let text = dict["text"] as? String,
               let creationDateString = dict["creationDate"] as? String,
-              let creationDate = Formatter.date.date(from: creationDateString)
+              let creationDate = Formatter.date.date(from: creationDateString),
+              let id = dict["id"] as? String
         else {return nil}
-        let id = dict["id"] as? String ?? UUID().uuidString
+        
         let importanceString = dict["importance"] as? String ?? "regular"
         let importance = Importance(rawValue : importanceString) ?? .regular
         let deadlineStr = dict["deadline"] as? String
@@ -59,6 +58,7 @@ extension TodoItem {
     }
     
     var json: Any {
+        // Обязательнеы поля - text, isDone, creationDate и id
         var dictionary : [String : Any] = [
             "id" : id,
             "text" : text,
@@ -82,39 +82,31 @@ extension TodoItem {
 
 extension TodoItem {
     static func parse(csv: String) -> TodoItem? {
+        // Как мне сказал ментор, в parse попадает только та строка, которую мы получили как item.csv, поэтому порядок чтения такой же и обязательные поля уже будут заполнены
+        // Обязательнеы поля - text, isDone, creationDate и id
         let lines = csv.components(separatedBy: ";")
-        guard lines.count >= 3,
+        guard lines.count == 7,
               let text = lines.first?.trimmingCharacters(in: .whitespacesAndNewlines),
               let isDone = Bool(lines[1].trimmingCharacters(in: .whitespacesAndNewlines)) ,
               let creationDate = Formatter.date.date(from:lines[2].trimmingCharacters(in: .newlines))
         else{
             return nil
-            
         }
         
-        // ПЕРЕДЕЛАТЬ!!!!
-        
-        let id = lines.count >= 4 ? lines[3].trimmingCharacters(in: .whitespacesAndNewlines) : UUID().uuidString
-        var importance = Importance.regular
-        var deadline: Date? = nil
-        var dateOfChange: Date? = nil
-        if lines.count >= 5{
-            let str = lines[4].trimmingCharacters(in: .whitespacesAndNewlines)
-            if(str == "important" || str == "unimportant"){
-                importance = Importance(rawValue: str) ?? .regular
-                deadline = lines.count >= 6 ? Formatter.date.date(from: lines[5].trimmingCharacters(in: .whitespacesAndNewlines)) : nil
-                dateOfChange = lines.count >= 7 ? Formatter.date.date(from: lines[6].trimmingCharacters(in: .whitespacesAndNewlines)) : nil
-                
-            } else {
-                deadline = Formatter.date.date(from: str)
-                dateOfChange = lines.count >= 6 ? Formatter.date.date(from: lines[5].trimmingCharacters(in: .whitespacesAndNewlines)): nil
-            }
+        let id = lines[3].trimmingCharacters(in: .whitespacesAndNewlines)
+        if id == "" {
+            return nil
         }
+        
+        let importance = Importance(rawValue: lines[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? .regular
+        let deadline = Formatter.date.date(from: lines[5].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
+        let dateOfChange =  Formatter.date.date(from: lines[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
         
         return TodoItem(id: id ,text: text, importance: importance, deadline: deadline, isDone: isDone, creationDate: creationDate, dateOfChange: dateOfChange)
     }
     
     var csv : String {
+        // csv всегда создается в таком порядке и в parse соответсвенно попадает тоже
         var string = "\(text);\(isDone);\(Formatter.date.string(from: creationDate));\(id)"
         if importance != .regular{
             string += ";\(importance.rawValue)"
@@ -137,6 +129,7 @@ extension TodoItem {
     }
 }
 
+// Расширение для конвертации даты в строку и обратно
 extension Formatter {
     static var date: DateFormatter = {
         let formatter = DateFormatter()
