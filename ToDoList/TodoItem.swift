@@ -13,7 +13,7 @@ enum Importance : String, Codable{
     case unimportant
 }
 
-struct TodoItem : Codable {
+struct TodoItem  {
     let id: String
     let text: String
     let importance: Importance
