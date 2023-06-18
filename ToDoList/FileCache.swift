@@ -28,8 +28,8 @@ class FileCache{
     func saveJSON(filename: String){
         let url_path = url.appendingPathComponent(filename)
         let jsonItems = todoItemCollection.map({$0.json})
-        let data = try! JSONSerialization.data(withJSONObject: jsonItems, options: .prettyPrinted)
         do {
+            let data = try JSONSerialization.data(withJSONObject: jsonItems, options: .prettyPrinted)
             try data.write(to: url_path)
         } catch {
             print("Error saving data: ",error)
