@@ -22,7 +22,16 @@ struct TodoItem  {
     let creationDate: Date
     let dateOfChange: Date?
     
-    init(id: String = UUID().uuidString, text: String, importance: Importance, deadline: Date? = nil, isDone: Bool, creationDate: Date, dateOfChange: Date? = nil) {
+    static let CSVseparator = ";"
+    
+    init(id: String = UUID().uuidString,
+         text: String,
+         importance: Importance,
+         deadline: Date? = nil,
+         isDone: Bool = false,
+         creationDate: Date = Date(),
+         dateOfChange: Date? = nil)
+    {
         self.id = id
         self.text = text
         self.importance = importance
@@ -36,24 +45,29 @@ struct TodoItem  {
 
 extension TodoItem {
     static func parse(json: Any) -> TodoItem? {
-        // Как мне сказал ментор, в parse попадает только та строка, которую мы получили как item.json, поэтому  обязательные поля уже будут заполнены
         // Обязательнеы поля - text, isDone, creationDate и id
         guard let dict = json as? [String : Any],
               let text = dict["text"] as? String,
               let creationDateString = dict["creationDate"] as? String,
               let creationDate = Formatter.date.date(from: creationDateString),
-              let id = dict["id"] as? String
+              let id = dict["id"] as? String,
+              let IsDone = dict["isDone"] as? Bool
         else {return nil}
         
         let importanceString = dict["importance"] as? String ?? "regular"
         let importance = Importance(rawValue : importanceString) ?? .regular
         let deadlineStr = dict["deadline"] as? String
         let deadline = deadlineStr.flatMap { Formatter.date.date(from: $0) }
-        let IsDone = dict["isDone"] as? Bool ?? false
         let dateOfChangeString = dict["dateOfChange"] as? String
         let dateofChange = dateOfChangeString.flatMap{Formatter.date.date(from:$0)}
         
-        return TodoItem(id: id, text: text, importance: importance, deadline: deadline, isDone: IsDone, creationDate: creationDate, dateOfChange: dateofChange)
+        return TodoItem(id: id,
+                        text: text,
+                        importance: importance,
+                        deadline: deadline,
+                        isDone: IsDone,
+                        creationDate: creationDate,
+                        dateOfChange: dateofChange)
         
     }
     
@@ -81,10 +95,11 @@ extension TodoItem {
 
 
 extension TodoItem {
+    
     static func parse(csv: String) -> TodoItem? {
-        // Как мне сказал ментор, в parse попадает только та строка, которую мы получили как item.csv, поэтому порядок чтения такой же и обязательные поля уже будут заполнены
+
         // Обязательнеы поля - text, isDone, creationDate и id
-        let lines = csv.components(separatedBy: ";")
+        let lines = csv.components(separatedBy: CSVseparator )
         guard lines.count == 7,
               let text = lines.first?.trimmingCharacters(in: .whitespacesAndNewlines),
               let isDone = Bool(lines[1].trimmingCharacters(in: .whitespacesAndNewlines)) ,
@@ -102,29 +117,32 @@ extension TodoItem {
         let deadline = Formatter.date.date(from: lines[5].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
         let dateOfChange =  Formatter.date.date(from: lines[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
         
-        return TodoItem(id: id ,text: text, importance: importance, deadline: deadline, isDone: isDone, creationDate: creationDate, dateOfChange: dateOfChange)
+        return TodoItem(id: id ,
+                        text: text,
+                        importance: importance,
+                        deadline: deadline,
+                        isDone: isDone,
+                        creationDate: creationDate,
+                        dateOfChange: dateOfChange)
     }
     
     var csv : String {
         // csv всегда создается в таком порядке и в parse соответсвенно попадает тоже
-        var string = "\(text);\(isDone);\(Formatter.date.string(from: creationDate));\(id)"
+        var string = "\(text);\(isDone);\(Formatter.date.string(from: creationDate));\(id);"
         if importance != .regular{
-            string += ";\(importance.rawValue)"
-        }else{
-            string += ";"
+            string += "\(importance.rawValue)"
         }
         
+        string += ";"
         if let deadline = deadline {
-            string += ";\(Formatter.date.string(from: deadline))"
-        }else{
-            string += ";"
+            string += "\(Formatter.date.string(from: deadline))"
         }
         
+        string += ";"
         if let dateOfChange = dateOfChange{
-            string += ";\(Formatter.date.string(from: dateOfChange))"
-        }else{
-            string += ";"
+            string += "\(Formatter.date.string(from: dateOfChange))"
         }
+        
         return string
     }
 }

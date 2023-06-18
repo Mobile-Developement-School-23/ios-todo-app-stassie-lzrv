@@ -7,8 +7,10 @@
 
 import Foundation
 
-// Пока что ошибки печатаются в консоль, но дальше со следующими дз будут пробрасоваться ошибки
+
 class FileCache{
+    let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    
     private(set) var todoItemCollection : [TodoItem] = []
     
     func addNewTask(_ new_task : TodoItem){
@@ -24,20 +26,20 @@ class FileCache{
     }
     
     func saveJSON(filename: String){
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename)
+        let url_path = url.appendingPathComponent(filename)
         let jsonItems = todoItemCollection.map({$0.json})
         let data = try! JSONSerialization.data(withJSONObject: jsonItems, options: .prettyPrinted)
         do {
-            try data.write(to: url)
+            try data.write(to: url_path)
         } catch {
             print("Error saving data: ",error)
         }
     }
     
     func loadJSON(filename: String){
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename)
-        if FileManager.default.fileExists(atPath: url.path),
-           let data = try? Data(contentsOf: url),
+        let url_path = url.appendingPathComponent(filename)
+        if FileManager.default.fileExists(atPath: url_path.path),
+           let data = try? Data(contentsOf: url_path),
            let jsonItems = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
             todoItemCollection = jsonItems.compactMap({TodoItem.parse(json: $0)})
         } else {
@@ -46,22 +48,22 @@ class FileCache{
     }
     
     func saveCSV(filename: String) {
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename)
+        let url_path = url.appendingPathComponent(filename)
         var csvString = ""
         for item in todoItemCollection {
             csvString.append("\(item.csv)\n")
         }
         do {
-            try csvString.write(to: url, atomically: true, encoding: .utf8)
+            try csvString.write(to: url_path, atomically: true, encoding: .utf8)
         } catch {
             print("Error saving data: ",error)
         }
     }
     
     func loadCSV(filename: String){
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename)
+        let url_path = url.appendingPathComponent(filename)
         do {
-            let csvData = try String(contentsOf: url, encoding: .utf8)
+            let csvData = try String(contentsOf: url_path, encoding: .utf8)
             let lines = csvData.components(separatedBy: .newlines)
             for line in lines{
                 guard let task = TodoItem.parse(csv: line) else {continue}
