@@ -16,6 +16,8 @@
 		81C95A042A3A6D3700EE5003 /* ToDoListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C95A032A3A6D3700EE5003 /* ToDoListTests.swift */; };
 		81C95A0E2A3A6D3800EE5003 /* ToDoListUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C95A0D2A3A6D3800EE5003 /* ToDoListUITests.swift */; };
 		81C95A102A3A6D3800EE5003 /* ToDoListUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C95A0F2A3A6D3800EE5003 /* ToDoListUITestsLaunchTests.swift */; };
+		81C95A1D2A3A6E6F00EE5003 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C95A1C2A3A6E6F00EE5003 /* TodoItem.swift */; };
+		81C95A1F2A3AE41C00EE5003 /* FileCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C95A1E2A3AE41C00EE5003 /* FileCache.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		81C95A092A3A6D3700EE5003 /* ToDoListUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ToDoListUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		81C95A0D2A3A6D3800EE5003 /* ToDoListUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoListUITests.swift; sourceTree = "<group>"; };
 		81C95A0F2A3A6D3800EE5003 /* ToDoListUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoListUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		81C95A1C2A3A6E6F00EE5003 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
+		81C95A1E2A3AE41C00EE5003 /* FileCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCache.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +110,8 @@
 				81C959F52A3A6D3700EE5003 /* Assets.xcassets */,
 				81C959F72A3A6D3700EE5003 /* LaunchScreen.storyboard */,
 				81C959FA2A3A6D3700EE5003 /* Info.plist */,
+				81C95A1C2A3A6E6F00EE5003 /* TodoItem.swift */,
+				81C95A1E2A3AE41C00EE5003 /* FileCache.swift */,
 			);
 			path = ToDoList;
 			sourceTree = "<group>";
@@ -260,6 +266,8 @@
 			files = (
 				81C959F12A3A6D3300EE5003 /* ViewController.swift in Sources */,
 				81C959ED2A3A6D3300EE5003 /* AppDelegate.swift in Sources */,
+				81C95A1D2A3A6E6F00EE5003 /* TodoItem.swift in Sources */,
+				81C95A1F2A3AE41C00EE5003 /* FileCache.swift in Sources */,
 				81C959EF2A3A6D3300EE5003 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
