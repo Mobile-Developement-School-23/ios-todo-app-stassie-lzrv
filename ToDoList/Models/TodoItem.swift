@@ -21,6 +21,7 @@ struct TodoItem  {
     let isDone: Bool
     let creationDate: Date
     let dateOfChange: Date?
+    let hexColor:String?
     
     static let CSVseparator = ";"
     
@@ -30,7 +31,8 @@ struct TodoItem  {
          deadline: Date? = nil,
          isDone: Bool = false,
          creationDate: Date = Date(),
-         dateOfChange: Date? = nil)
+         dateOfChange: Date? = nil,
+         hexColor:String? = nil)
     {
         self.id = id
         self.text = text
@@ -39,6 +41,7 @@ struct TodoItem  {
         self.isDone = isDone
         self.creationDate = creationDate
         self.dateOfChange = dateOfChange
+        self.hexColor = hexColor
     }
 }
 
@@ -60,14 +63,15 @@ extension TodoItem {
         let deadline = deadlineStr.flatMap { Formatter.date.date(from: $0) }
         let dateOfChangeString = dict["dateOfChange"] as? String
         let dateofChange = dateOfChangeString.flatMap{Formatter.date.date(from:$0)}
-        
+        let hexColor = dict["hexColor"] as? String
         return TodoItem(id: id,
                         text: text,
                         importance: importance,
                         deadline: deadline,
                         isDone: IsDone,
                         creationDate: creationDate,
-                        dateOfChange: dateofChange)
+                        dateOfChange: dateofChange,
+                        hexColor: hexColor)
         
     }
     
@@ -88,6 +92,10 @@ extension TodoItem {
         if let dateOfChange = dateOfChange{
             dictionary["dateOfChange"] = Formatter.date.string(from: dateOfChange)
         }
+        if let hexColor = hexColor {
+            dictionary["hexColor"] = hexColor
+        }
+        
         return dictionary
     }
     
@@ -97,7 +105,7 @@ extension TodoItem {
 extension TodoItem {
     
     static func parse(csv: String) -> TodoItem? {
-
+        
         // Обязательнеы поля - text, isDone, creationDate и id
         let lines = csv.components(separatedBy: CSVseparator )
         guard lines.count == 7,
@@ -116,7 +124,7 @@ extension TodoItem {
         let importance = Importance(rawValue: lines[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? .regular
         let deadline = Formatter.date.date(from: lines[5].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
         let dateOfChange =  Formatter.date.date(from: lines[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
-        
+       
         return TodoItem(id: id ,
                         text: text,
                         importance: importance,
@@ -154,7 +162,7 @@ extension Formatter {
         formatter.calendar = Calendar(identifier: .iso8601)
         formatter.locale = Locale(identifier: "ru_RU")
         formatter.timeZone = TimeZone(identifier: "Europe/Moscow")
-        formatter.dateFormat = "d MMMM HH:mm"
+        formatter.dateFormat = "d MMMM"
         return formatter
     }()
 }
