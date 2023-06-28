@@ -155,14 +155,3 @@ extension TodoItem {
     }
 }
 
-// Расширение для конвертации даты в строку и обратно
-extension Formatter {
-    static var date: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.timeZone = TimeZone(identifier: "Europe/Moscow")
-        formatter.dateFormat = "d MMMM"
-        return formatter
-    }()
-}

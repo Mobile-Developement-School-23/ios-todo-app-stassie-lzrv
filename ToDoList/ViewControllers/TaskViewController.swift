@@ -13,36 +13,16 @@ class TaskViewController: UIViewController {
     var fileCache = FileCache()
     var toDoItem :TodoItem?
     
-    
+    private let navBar = NavBar()
+    private let importanceView = ImportanceView()
+    private let deadlineView = DeadlineView()
+    private let colorPickerView = ColorPickerView()
     private let colorPicker = UIColorPickerViewController()
     private var scrollView = UIScrollView()
     private lazy var contentView = UIView()
     private var stackView = UIStackView()
-    let color_button = UIButton()
     
-    
-    private let cancellButton : UIButton = {
-        let cancellButton = UIButton()
-        cancellButton.setTitle("Отменить", for: .normal)
-        cancellButton.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
-        cancellButton.setTitleColor(UIColor(named: "LabelTertiary"), for: .disabled)
-        cancellButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
-        cancellButton.addTarget(self, action: #selector(cancellButtonTapped), for: .touchUpInside)
-        cancellButton.isEnabled = false
-        return cancellButton
-    }()
-    
-    private let saveButton: UIButton = {
-        let saveButton = UIButton()
-        saveButton.setTitle("Сохранить", for: .normal)
-        saveButton.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
-        saveButton.setTitleColor(UIColor(named: "LabelTertiary"), for: .disabled)
-        saveButton.isEnabled = false
-        saveButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
-        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
-        return saveButton
-    }()
-    
+
     private let textView : UITextView = {
         let textView = UITextView()
         textView.isScrollEnabled = false
@@ -57,10 +37,9 @@ class TaskViewController: UIViewController {
         textView.layer.cornerRadius = 16
         return textView
     }()
-    private var switcher = UISwitch()
-    private var control = UISegmentedControl(items: ["", "нет", ""])
+
     let deleteButton = UIButton()
-    let date_button = UIButton()
+
     let optional_separator = Separator()
     
     
@@ -94,6 +73,7 @@ class TaskViewController: UIViewController {
         scrollView.backgroundColor = UIColor(named: "BackPrimary")
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.showsVerticalScrollIndicator = true
+        
         view.addSubview(scrollView)
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,constant: 56),
@@ -107,11 +87,11 @@ class TaskViewController: UIViewController {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
         NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor,constant: 20),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor,constant: -20),
+            
         ])
     }
     
@@ -122,11 +102,11 @@ class TaskViewController: UIViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -16),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
-        stackView.spacing = 20
+        stackView.spacing = 16
         setupHorizontalStackView()
         setupTextView()
         setupVerticalStackView()
@@ -134,34 +114,25 @@ class TaskViewController: UIViewController {
     }
     
     private func setupHorizontalStackView(){
-        let label = UILabel()
-        label.text = "Дело"
-        label.textColor = UIColor(named: "LabelPrimary")
-        label.font = UIFont.boldSystemFont(ofSize: 20)
-        label.textAlignment = .center
-        let horizontalSV = UIStackView(arrangedSubviews: [cancellButton,label,saveButton])
-        horizontalSV.axis = .horizontal
-        horizontalSV.spacing = 10
-        horizontalSV.distribution = .equalSpacing
-        horizontalSV.backgroundColor = .clear
-        view.addSubview(horizontalSV)
-        horizontalSV.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(navBar)
         NSLayoutConstraint.activate([
-            horizontalSV.topAnchor.constraint(equalTo: view.topAnchor),
-            horizontalSV.widthAnchor.constraint(equalTo: view.widthAnchor,constant: -32),
-            horizontalSV.heightAnchor.constraint(equalToConstant: 56),
-            horizontalSV.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
-            horizontalSV.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -16)
-        ])
+            navBar.topAnchor.constraint(equalTo: view.topAnchor),
+            navBar.widthAnchor.constraint(equalTo: view.widthAnchor,constant: -32),
+            navBar.heightAnchor.constraint(equalToConstant: 56),
+            navBar.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
+            ])
+        navBar.saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+        navBar.cancellButton.addTarget(self, action: #selector(cancellButtonTapped), for: .touchUpInside)
+        
     }
-    
+
     private func setupTextView(){
         textView.delegate = self
         stackView.addArrangedSubview(textView)
         NSLayoutConstraint.activate([
             textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120),
-            textView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            textView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor)
+            textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            textView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
         ])
         if (toDoItem != nil){
             textView.text = toDoItem?.text
@@ -170,7 +141,7 @@ class TaskViewController: UIViewController {
             }else{
                 textView.textColor = UIColor(named: "LabelPrimary")
             }
-            saveButton.isEnabled = true
+            navBar.saveButton.isEnabled = true
             deleteButton.isEnabled = true
         }
     }
@@ -182,167 +153,55 @@ class TaskViewController: UIViewController {
         verticalSV.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(verticalSV)
         NSLayoutConstraint.activate([
-            verticalSV.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            verticalSV.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            
+            verticalSV.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            verticalSV.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
         ])
         verticalSV.spacing = 0
         verticalSV.distribution = .equalSpacing
-        verticalSV.alignment = .fill
         verticalSV.layer.cornerRadius = 16
-        
-        let imp_view = UIView()
-        imp_view.backgroundColor = UIColor(named: "BackSecondary")
-        imp_view.layer.cornerRadius = 16
-        let imp_label = UILabel()
-        imp_label.text = "Важность"
-        imp_label.textColor = UIColor(named: "LabelPrimary")
-        imp_label.font = UIFont.systemFont(ofSize: 17)
-        imp_view.addSubview(imp_label)
-        imp_label.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            imp_label.leadingAnchor.constraint(equalTo:imp_view.leadingAnchor,constant: 10),
-            imp_label.trailingAnchor.constraint(equalTo:imp_view.trailingAnchor,constant: -10),
-            imp_label.topAnchor.constraint(equalTo: imp_view.topAnchor),
-            imp_label.bottomAnchor.constraint(equalTo: imp_view.bottomAnchor),
-            
-        ])
-        verticalSV.addArrangedSubview(imp_view)
-        imp_view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            imp_view.heightAnchor.constraint(equalToConstant: 56)
-        ])
-        
-        imp_view.addSubview(control)
-        control.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            control.topAnchor.constraint(equalTo: imp_view.topAnchor, constant: 10 ),
-            control.bottomAnchor.constraint(equalTo: imp_view.bottomAnchor,constant: -10),
-            control.trailingAnchor.constraint(equalTo: imp_view.trailingAnchor,constant: -16)
-        ])
-        control.setTitle(nil, forSegmentAt: 0)
-        control.setTitle(nil, forSegmentAt: 2)
-        control.setImage(UIImage(named: "low_priority_icon.svg"), forSegmentAt: 0)
-        control.setImage(UIImage(named: "high_priority_icon.svg"), forSegmentAt: 2)
-        control.selectedSegmentIndex = 1
-        
+        verticalSV.addArrangedSubview(importanceView)
+
         if toDoItem != nil {
             if toDoItem?.importance == .unimportant {
-                control.selectedSegmentIndex = 0
+                importanceView.control.selectedSegmentIndex = 0
             } else if toDoItem?.importance == .important {
-                control.selectedSegmentIndex = 2
+                importanceView.control.selectedSegmentIndex = 2
             }
         }
         
         let separator_1 = Separator()
         verticalSV.addArrangedSubview(separator_1)
-        separator_1.trailingAnchor.constraint(equalTo: verticalSV.trailingAnchor,constant: -16).isActive = true
-        separator_1.leadingAnchor.constraint(equalTo: verticalSV.leadingAnchor,constant: 16).isActive = true
-        
-        let color_picker_view = UIView()
-        color_picker_view.translatesAutoresizingMaskIntoConstraints = false
-        color_picker_view.heightAnchor.constraint(equalToConstant: 56).isActive = true
-        color_picker_view.backgroundColor = UIColor(named: "BackSecondary")
-        color_picker_view.layer.cornerRadius = 16
-        verticalSV.addArrangedSubview(color_picker_view)
+        verticalSV.addArrangedSubview(colorPickerView)
         let separator_2 = Separator()
         verticalSV.addArrangedSubview(separator_2)
-        separator_2.trailingAnchor.constraint(equalTo: verticalSV.trailingAnchor,constant: -16).isActive = true
-        separator_2.leadingAnchor.constraint(equalTo: verticalSV.leadingAnchor,constant: 16).isActive = true
-        let color_label = UILabel()
-        color_label.text = "Цвет"
-        color_label.textColor = UIColor(named: "LabelPrimary")
-        color_label.font = UIFont.systemFont(ofSize: 17)
-        color_label.translatesAutoresizingMaskIntoConstraints = false
-        color_picker_view.addSubview(color_label)
-        NSLayoutConstraint.activate([
-            color_label.leadingAnchor.constraint(equalTo:color_picker_view.leadingAnchor,constant: 10),
-            color_label.trailingAnchor.constraint(equalTo:color_picker_view.trailingAnchor,constant: -10),
-            color_label.topAnchor.constraint(equalTo: color_picker_view.topAnchor),
-            color_label.bottomAnchor.constraint(equalTo: color_picker_view.bottomAnchor),
-        ])
         
-        color_button.backgroundColor = UIColor(named: "LabelPrimary")
         if(toDoItem?.hexColor != nil){
-            color_button.backgroundColor = UIColor(hex: (toDoItem?.hexColor)!)
+            colorPickerView.button.backgroundColor = UIColor(hex: (toDoItem?.hexColor)!)
         }
-        color_button.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
-        color_button.layer.cornerRadius = 16
-        color_button.translatesAutoresizingMaskIntoConstraints = false
-        color_picker_view.addSubview(color_button)
-        NSLayoutConstraint.activate([
-            color_button.setHeight(10),
-            color_button.setWidth(32),
-            color_button.trailingAnchor.constraint(equalTo:color_picker_view.trailingAnchor,constant: -16),
-            color_button.topAnchor.constraint(equalTo: color_picker_view.topAnchor,constant: 12),
-            color_button.bottomAnchor.constraint(equalTo: color_picker_view.bottomAnchor,constant: -12),
-        ])
-        color_button.addTarget(self, action: #selector(colorPickerButtonPressed), for: .touchUpInside)
-        
-        let deadline_view = UIView()
-        deadline_view.backgroundColor = UIColor(named: "BackSecondary")
-        deadline_view.layer.cornerRadius = 16
-        verticalSV.addArrangedSubview(deadline_view)
-        deadline_view.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            deadline_view.heightAnchor.constraint(equalToConstant: 56)
-        ])
-        
-        let deadlineSV = UIStackView()
-        deadlineSV.axis = .vertical
-        deadlineSV.alignment = .leading
-        deadlineSV.distribution = .equalSpacing
-        deadlineSV.spacing = 1
-        deadline_view.addSubview(deadlineSV)
-        deadlineSV.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            deadlineSV.leadingAnchor.constraint(equalTo: deadline_view.leadingAnchor,constant: 10),
-            deadlineSV.trailingAnchor.constraint(equalTo: deadline_view.trailingAnchor,constant: -10),
-            deadlineSV.topAnchor.constraint(equalTo: deadline_view.topAnchor,constant: 8),
-            deadlineSV.bottomAnchor.constraint(equalTo: deadline_view.bottomAnchor,constant: -8)
-        ])
-        
-        verticalSV.addArrangedSubview(optional_separator)
-        optional_separator.trailingAnchor.constraint(equalTo: verticalSV.trailingAnchor,constant: -16).isActive = true
-        optional_separator.leadingAnchor.constraint(equalTo: verticalSV.leadingAnchor,constant: 16).isActive = true
-        optional_separator.isHidden = true
-        
-        let deadline_label = UILabel()
-        deadline_label.text = "Сделать до"
-        deadline_label.textColor = UIColor(named: "LabelPrimary")
-        deadline_label.font = UIFont.systemFont(ofSize: 17)
-        deadline_label.translatesAutoresizingMaskIntoConstraints = false
-        
-        date_button.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
-        date_button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 13)
-        date_button.addTarget(self, action: #selector(showCalendar), for: .touchUpInside)
-        date_button.translatesAutoresizingMaskIntoConstraints = false
-        date_button.heightAnchor.constraint(equalToConstant: 18).isActive = true
 
-        deadlineSV.addArrangedSubview(deadline_label)
-        deadlineSV.addArrangedSubview(date_button)
+        colorPickerView.button.addTarget(self, action: #selector(colorPickerButtonPressed), for: .touchUpInside)
         
+         verticalSV.addArrangedSubview(deadlineView)
+
+        verticalSV.addArrangedSubview(optional_separator)
+        optional_separator.layer.opacity = 0
+        
+        deadlineView.date_button.addTarget(self, action: #selector(showCalendar), for: .touchUpInside)
+
         if toDoItem != nil && toDoItem?.deadline != nil {
-            date_button.isHidden = false
-            date_button.setTitle(Formatter.date.string(from: (toDoItem?.deadline)!), for: .normal)
-            switcher.isOn = true
-            deadlineSV.layoutIfNeeded()
+            deadlineView.date_button.isHidden = false
+            deadlineView.date_button.setTitle(Formatter.date.string(from: (toDoItem?.deadline)!), for: .normal)
+            deadlineView.switcher.isOn = true
+            datePicker.date = (toDoItem?.deadline!)!
+            deadlineView.stackView.layoutIfNeeded()
+            
         }else{
-            date_button.isHidden = true
+            deadlineView.date_button.isHidden = true
+            datePicker.date = Date.tomorrow
         }
         
-        switcher.translatesAutoresizingMaskIntoConstraints = false
-        deadline_view.addSubview(switcher)
-        NSLayoutConstraint.activate([
-            switcher.trailingAnchor.constraint(equalTo: deadline_view.trailingAnchor,constant: -16),
-            switcher.topAnchor.constraint(equalTo: deadline_view.topAnchor,constant: 8),
-            switcher.bottomAnchor.constraint(equalTo: deadline_view.bottomAnchor,constant: -8)
-        ])
-        switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
-        
+        deadlineView.switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
         verticalSV.addArrangedSubview(datePicker)
-        datePicker.date = Date.tomorrow
         datePicker.isHidden = true
         datePicker.addTarget(self, action: #selector(datePickerHandler(sender:)), for: UIControl.Event.valueChanged)
     }
@@ -354,9 +213,7 @@ class TaskViewController: UIViewController {
     
     @objc func datePickerHandler(sender: UIDatePicker) {
         let strDate = Formatter.date.string(from: datePicker.date)
-        date_button.setTitle(strDate, for: .normal)
-        
-        
+        deadlineView.date_button.setTitle(strDate, for: .normal)
     }
     
     private func setupDeleteButton(){
@@ -374,9 +231,8 @@ class TaskViewController: UIViewController {
         stackView.addArrangedSubview(deleteButton)
         NSLayoutConstraint.activate([
             deleteButton.heightAnchor.constraint(equalToConstant: 60),
-            deleteButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            deleteButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor)
-            
+            deleteButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            deleteButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
         ])
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
         
@@ -400,14 +256,14 @@ class TaskViewController: UIViewController {
         }
         var importance = Importance.regular
         var deadline: Date? = nil
-        let hexColor: String? = color_button.backgroundColor?.toHex
-        let selected_importance_ind = control.selectedSegmentIndex
+        let hexColor: String? = colorPickerView.button.backgroundColor?.toHex
+        let selected_importance_ind = importanceView.control.selectedSegmentIndex
         if selected_importance_ind == 0 {
             importance = .unimportant
         }else if selected_importance_ind == 2{
             importance = .important
         }
-        if (switcher.isOn){
+        if (deadlineView.switcher.isOn){
             deadline = datePicker.date
         }
         
@@ -418,7 +274,7 @@ class TaskViewController: UIViewController {
                             hexColor: hexColor)
         fileCache.addNewTask(toDoItem!)
         fileCache.saveJSON(filename: "hw2")
-        saveButton.isEnabled = false
+        navBar.saveButton.isEnabled = false
         
     }
     
@@ -427,16 +283,16 @@ class TaskViewController: UIViewController {
         toDoItem = nil
         textView.text = "Что надо сделать?"
         textView.textColor = UIColor(named: "LabelTertiary")
-        if(switcher.isOn){
-            switcher.setOn(false, animated: true)
+        if(deadlineView.switcher.isOn){
+            deadlineView.switcher.setOn(false, animated: true)
             datePicker.isHidden = true
             deleteButton.isEnabled = false
         }
-        date_button.isHidden = true
-        control.selectedSegmentIndex = 1
-        color_button.backgroundColor = UIColor(named: "LabelPrimary")
-        cancellButton.isEnabled = false
-        saveButton.isEnabled = false
+        deadlineView.date_button.isHidden = true
+        importanceView.control.selectedSegmentIndex = 1
+        colorPickerView.button.backgroundColor = UIColor(named: "LabelPrimary")
+        navBar.cancellButton.isEnabled = false
+        navBar.saveButton.isEnabled = false
         deleteButton.isEnabled = false
     }
     
@@ -444,13 +300,15 @@ class TaskViewController: UIViewController {
     
     @objc
     private func switcherPressed(){
-        if(switcher.isOn){
-            self.date_button.isHidden = false
-            self.date_button.setTitle(Formatter.date.string(from: self.datePicker.date), for: .normal)
+        if(deadlineView.switcher.isOn){
+            self.deadlineView.date_button.isHidden = false
+            self.deadlineView.date_button.setTitle(Formatter.date.string(from: self.datePicker.date), for: .normal)
+            
         }else{
-            optional_separator.isHidden = false
-            self.date_button.isHidden = true
+        
+            self.deadlineView.date_button.isHidden = true
             UIView.animate(withDuration: 0.5, animations:{
+                self.optional_separator.layer.opacity = 0
                 self.datePicker.isHidden = true
                 self.datePicker.layer.opacity = 0
             })
@@ -461,15 +319,15 @@ class TaskViewController: UIViewController {
     @objc
     private func showCalendar(){
         if self.datePicker.isHidden == true{
-            optional_separator.isHidden = false
-            UIView.animate(withDuration: 0.7, animations: {
+            UIView.animate(withDuration: 0.5, animations: {
                 self.datePicker.layer.opacity = 1
+                self.optional_separator.layer.opacity = 1
                 self.datePicker.isHidden = false;
             })
         }else{
-            optional_separator.isHidden = true
-            UIView.animate(withDuration: 0.7, animations: {
-                self.datePicker.layer.opacity = .zero
+            UIView.animate(withDuration: 0.5, animations: {
+                self.optional_separator.layer.opacity = 0
+                self.datePicker.layer.opacity = 0
                 self.datePicker.isHidden = true;
             })
         }
@@ -499,58 +357,33 @@ extension TaskViewController:UITextViewDelegate{
     func textViewDidBeginEditing(_ textView: UITextView) {
         if textView.textColor == UIColor(named: "LabelTertiary") {
             textView.text = nil
-            textView.textColor = color_button.backgroundColor
+            textView.textColor = colorPickerView.button.backgroundColor
         }
     }
     func textViewDidChange(_ textView: UITextView) {
         if(textView.textColor != UIColor(named: "LabelTertiary")){
-            saveButton.isEnabled = true
+            navBar.saveButton.isEnabled = true
             deleteButton.isEnabled = true
-            cancellButton.isEnabled = true
+            navBar.cancellButton.isEnabled = true
         }
     }
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView.text.isEmpty {
             textView.text = "Что надо сделать?"
             textView.textColor = UIColor(named: "LabelTertiary")
-            saveButton.isEnabled = false
+            navBar.saveButton.isEnabled = false
             deleteButton.isEnabled = false
         }
     }
 }
 
 
-extension Date {
-    
-    static var tomorrow:  Date { return Date().dayAfter }
-    
-    var dayAfter: Date {
-        return Calendar.current.date(byAdding: .day, value: 1, to: noon)!
-    }
-    var noon: Date {
-        return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: self)!
-    }
-    
-}
-
-
-extension UIViewController {
-    func hideKeyboardWhenTappedAround() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(UIViewController.dismissKeyboard))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
-    }
-    
-    @objc func dismissKeyboard() {
-        view.endEditing(true)
-    }
-}
 
 extension TaskViewController: UIColorPickerViewControllerDelegate {
     
     func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
         let color = viewController.selectedColor
-        color_button.backgroundColor = color
+        colorPickerView.button.backgroundColor = color
         if(textView.textColor != UIColor(named: "LabelTertiary")){
             textView.textColor = color
         }

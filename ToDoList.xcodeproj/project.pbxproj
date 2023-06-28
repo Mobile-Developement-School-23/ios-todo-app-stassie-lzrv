@@ -7,7 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8104C3632A4B1642009793DC /* NavBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8104C3622A4B1642009793DC /* NavBar.swift */; };
+		8104C3652A4B1A3A009793DC /* ImportanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8104C3642A4B1A3A009793DC /* ImportanceView.swift */; };
+		8104C3672A4B200B009793DC /* DeadlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8104C3662A4B200B009793DC /* DeadlineView.swift */; };
+		8104C3692A4B30F7009793DC /* ColorPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8104C3682A4B30F7009793DC /* ColorPickerView.swift */; };
 		813FBCDC2A424C300022FEAB /* UIView+Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813FBCDB2A424C300022FEAB /* UIView+Pin.swift */; };
+		817194B82A4BB220009550E0 /* Date+Formatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817194B72A4BB220009550E0 /* Date+Formatter.swift */; };
+		817194BA2A4BB280009550E0 /* Keyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817194B92A4BB280009550E0 /* Keyboard.swift */; };
 		8192A1BD2A46590C00B02259 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8192A1BC2A46590C00B02259 /* Separator.swift */; };
 		8192A1C22A4675DD00B02259 /* UIColor+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8192A1C12A4675DD00B02259 /* UIColor+.swift */; };
 		81C959ED2A3A6D3300EE5003 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C959EC2A3A6D3300EE5003 /* AppDelegate.swift */; };
@@ -41,7 +47,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8104C3622A4B1642009793DC /* NavBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavBar.swift; sourceTree = "<group>"; };
+		8104C3642A4B1A3A009793DC /* ImportanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportanceView.swift; sourceTree = "<group>"; };
+		8104C3662A4B200B009793DC /* DeadlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineView.swift; sourceTree = "<group>"; };
+		8104C3682A4B30F7009793DC /* ColorPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerView.swift; sourceTree = "<group>"; };
 		813FBCDB2A424C300022FEAB /* UIView+Pin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Pin.swift"; sourceTree = "<group>"; };
+		817194B72A4BB220009550E0 /* Date+Formatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Formatter.swift"; sourceTree = "<group>"; };
+		817194B92A4BB280009550E0 /* Keyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keyboard.swift; sourceTree = "<group>"; };
 		8192A1BC2A46590C00B02259 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
 		8192A1C12A4675DD00B02259 /* UIColor+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+.swift"; sourceTree = "<group>"; };
 		81C959E92A3A6D3300EE5003 /* ToDoList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToDoList.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -90,6 +102,10 @@
 			isa = PBXGroup;
 			children = (
 				8192A1BC2A46590C00B02259 /* Separator.swift */,
+				8104C3622A4B1642009793DC /* NavBar.swift */,
+				8104C3642A4B1A3A009793DC /* ImportanceView.swift */,
+				8104C3662A4B200B009793DC /* DeadlineView.swift */,
+				8104C3682A4B30F7009793DC /* ColorPickerView.swift */,
 			);
 			path = Controls;
 			sourceTree = "<group>";
@@ -99,6 +115,8 @@
 			children = (
 				813FBCDB2A424C300022FEAB /* UIView+Pin.swift */,
 				8192A1C12A4675DD00B02259 /* UIColor+.swift */,
+				817194B72A4BB220009550E0 /* Date+Formatter.swift */,
+				817194B92A4BB280009550E0 /* Keyboard.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -307,11 +325,17 @@
 				81C959F12A3A6D3300EE5003 /* MainViewController.swift in Sources */,
 				81C959ED2A3A6D3300EE5003 /* AppDelegate.swift in Sources */,
 				81C95A1D2A3A6E6F00EE5003 /* TodoItem.swift in Sources */,
+				8104C3652A4B1A3A009793DC /* ImportanceView.swift in Sources */,
+				817194B82A4BB220009550E0 /* Date+Formatter.swift in Sources */,
 				8192A1BD2A46590C00B02259 /* Separator.swift in Sources */,
 				81C95A1F2A3AE41C00EE5003 /* FileCache.swift in Sources */,
+				817194BA2A4BB280009550E0 /* Keyboard.swift in Sources */,
+				8104C3672A4B200B009793DC /* DeadlineView.swift in Sources */,
+				8104C3632A4B1642009793DC /* NavBar.swift in Sources */,
 				81C959EF2A3A6D3300EE5003 /* SceneDelegate.swift in Sources */,
 				813FBCDC2A424C300022FEAB /* UIView+Pin.swift in Sources */,
 				81F8243B2A41D85A00BE2343 /* TaskViewController.swift in Sources */,
+				8104C3692A4B30F7009793DC /* ColorPickerView.swift in Sources */,
 				8192A1C22A4675DD00B02259 /* UIColor+.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
