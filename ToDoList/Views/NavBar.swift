@@ -15,7 +15,7 @@ class NavBar: UIStackView{
         cancellButton.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
         cancellButton.setTitleColor(UIColor(named: "LabelTertiary"), for: .disabled)
         cancellButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
-        cancellButton.isEnabled = false
+        cancellButton.isEnabled = true
         return cancellButton
     }()
     
@@ -28,7 +28,7 @@ class NavBar: UIStackView{
         saveButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
         return saveButton
     }()
-    private let label : UILabel = {
+    let label : UILabel = {
         let label = UILabel()
         label.text = "Дело"
         label.textColor = UIColor(named: "LabelPrimary")

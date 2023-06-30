@@ -8,12 +8,15 @@
 import Foundation
 import UIKit
 
+
+
 class TaskViewController: UIViewController {
-    
     var fileCache = FileCache()
     var toDoItem :TodoItem?
+
+    var delegate: UpdateDelegate?
     
-    private let navBar = NavBar()
+     let navBar = NavBar()
     private let importanceView = ImportanceView()
     private let deadlineView = DeadlineView()
     private let colorPickerView = ColorPickerView()
@@ -21,9 +24,35 @@ class TaskViewController: UIViewController {
     private var scrollView = UIScrollView()
     private lazy var contentView = UIView()
     private var stackView = UIStackView()
+    private let deleteButton = UIButton()
+    private let optional_separator = Separator()
+    private let separator_1 = Separator()
+    private let separator_2 = Separator()
     
+    
+    private var isLandscape: Bool = UIDevice.current.orientation.isLandscape {
+        didSet {
+            deleteButton.isHidden = isLandscape
+            importanceView.isHidden = isLandscape
+            deadlineView.isHidden = isLandscape
+            colorPickerView.isHidden = isLandscape
+            optional_separator.isHidden = isLandscape
+            separator_1.isHidden = isLandscape
+            separator_2.isHidden = isLandscape
+            if isLandscape {
+                let bounds = UIScreen.main.bounds
+                let minHeight = bounds.height > bounds.width ? bounds.width : bounds.height
+                let barHeight = navBar.frame.height
+                textView.heightAnchor.constraint(greaterThanOrEqualToConstant:  minHeight - 32 - barHeight).isActive = true
+            } else {
+                textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120).isActive = true
+            }
+        }
+    }
 
-    private let textView : UITextView = {
+    
+    
+    let textView : UITextView = {
         let textView = UITextView()
         textView.isScrollEnabled = false
         textView.text = "Что надо сделать?"
@@ -38,9 +67,6 @@ class TaskViewController: UIViewController {
         return textView
     }()
 
-    let deleteButton = UIButton()
-
-    let optional_separator = Separator()
     
     
     private let datePicker : UIDatePicker = {
@@ -54,10 +80,7 @@ class TaskViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        fileCache.loadJSON(filename: "hw2")
-        if(!fileCache.todoItemCollection.isEmpty){
-            toDoItem = fileCache.todoItemCollection[0]
-        }
+        fileCache.loadJSON(filename: "todo_data")
         self.hideKeyboardWhenTappedAround()
         self.registerForKeyboardNotification()
         view.backgroundColor = UIColor(named: "BackPrimary")
@@ -65,9 +88,69 @@ class TaskViewController: UIViewController {
         setupContentView()
         setupStackView()
         colorPicker.delegate = self
+        if(toDoItem != nil){
+            configure(with: toDoItem!)
+        }
+        isLandscape =  UIDevice.current.orientation.isLandscape
+        deleteButton.layer.opacity = 0
+        navBar.layer.opacity = 0
+        stackView.arrangedSubviews[1].layer.opacity = 0
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        delegate?.didUpdate()
+        
+    }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        UIView.animate(withDuration: 0.4) {
+            self.navBar.layer.opacity = 1
+            self.textView.layer.opacity = 1
+
+            self.deleteButton.alpha = 1
+            self.stackView.arrangedSubviews[1].layer.opacity = 1
+        }
+        
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        isLandscape = UIDevice.current.orientation.isLandscape
+    }
+    
+    func configure(with todoItem: TodoItem){
+        toDoItem = todoItem
+        textView.text = toDoItem?.text
+        if(toDoItem?.hexColor != nil){
+            textView.textColor = UIColor(hex: (toDoItem?.hexColor)!)
+        }else{
+            textView.textColor = UIColor(named: "LabelPrimary")
+        }
+        navBar.saveButton.isEnabled = true
+        deleteButton.isEnabled = true
+        
+        if toDoItem?.importance == .unimportant {
+            importanceView.control.selectedSegmentIndex = 0
+        } else if toDoItem?.importance == .important {
+            importanceView.control.selectedSegmentIndex = 2
+        }
+        if(toDoItem?.hexColor != nil){
+            colorPickerView.button.backgroundColor = UIColor(hex: (toDoItem?.hexColor)!)
+        }
+        
+        if toDoItem?.deadline != nil {
+            deadlineView.date_button.isHidden = false
+            deadlineView.date_button.setTitle(Formatter.date.string(from: (toDoItem?.deadline)!), for: .normal)
+            deadlineView.switcher.isOn = true
+            datePicker.date = (toDoItem?.deadline!)!
+            deadlineView.stackView.layoutIfNeeded()
+        }
+        
+        
+        
+    }
     
     private func setupScrollView(){
         scrollView.backgroundColor = UIColor(named: "BackPrimary")
@@ -120,30 +203,23 @@ class TaskViewController: UIViewController {
             navBar.widthAnchor.constraint(equalTo: view.widthAnchor,constant: -32),
             navBar.heightAnchor.constraint(equalToConstant: 56),
             navBar.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
-            ])
+        ])
         navBar.saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+        
         navBar.cancellButton.addTarget(self, action: #selector(cancellButtonTapped), for: .touchUpInside)
         
     }
-
+    
     private func setupTextView(){
         textView.delegate = self
+        textView.layer.opacity = 0
         stackView.addArrangedSubview(textView)
         NSLayoutConstraint.activate([
             textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120),
             textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             textView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
         ])
-        if (toDoItem != nil){
-            textView.text = toDoItem?.text
-            if(toDoItem?.hexColor != nil){
-                textView.textColor = UIColor(hex: (toDoItem?.hexColor)!)
-            }else{
-                textView.textColor = UIColor(named: "LabelPrimary")
-            }
-            navBar.saveButton.isEnabled = true
-            deleteButton.isEnabled = true
-        }
+        
     }
     
     private func setupVerticalStackView(){
@@ -160,46 +236,20 @@ class TaskViewController: UIViewController {
         verticalSV.distribution = .equalSpacing
         verticalSV.layer.cornerRadius = 16
         verticalSV.addArrangedSubview(importanceView)
-
-        if toDoItem != nil {
-            if toDoItem?.importance == .unimportant {
-                importanceView.control.selectedSegmentIndex = 0
-            } else if toDoItem?.importance == .important {
-                importanceView.control.selectedSegmentIndex = 2
-            }
-        }
-        
-        let separator_1 = Separator()
         verticalSV.addArrangedSubview(separator_1)
         verticalSV.addArrangedSubview(colorPickerView)
-        let separator_2 = Separator()
         verticalSV.addArrangedSubview(separator_2)
         
-        if(toDoItem?.hexColor != nil){
-            colorPickerView.button.backgroundColor = UIColor(hex: (toDoItem?.hexColor)!)
-        }
-
         colorPickerView.button.addTarget(self, action: #selector(colorPickerButtonPressed), for: .touchUpInside)
         
-         verticalSV.addArrangedSubview(deadlineView)
-
+        verticalSV.addArrangedSubview(deadlineView)
+        optional_separator.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         verticalSV.addArrangedSubview(optional_separator)
         optional_separator.layer.opacity = 0
         
         deadlineView.date_button.addTarget(self, action: #selector(showCalendar), for: .touchUpInside)
-
-        if toDoItem != nil && toDoItem?.deadline != nil {
-            deadlineView.date_button.isHidden = false
-            deadlineView.date_button.setTitle(Formatter.date.string(from: (toDoItem?.deadline)!), for: .normal)
-            deadlineView.switcher.isOn = true
-            datePicker.date = (toDoItem?.deadline!)!
-            deadlineView.stackView.layoutIfNeeded()
-            
-        }else{
-            deadlineView.date_button.isHidden = true
-            datePicker.date = Date.tomorrow
-        }
-        
+        deadlineView.date_button.isHidden = true
+        datePicker.date = Date.tomorrow
         deadlineView.switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
         verticalSV.addArrangedSubview(datePicker)
         datePicker.isHidden = true
@@ -220,9 +270,7 @@ class TaskViewController: UIViewController {
         
         deleteButton.backgroundColor = UIColor(named: "BackSecondary")
         deleteButton.isEnabled = false
-        if(toDoItem != nil){
-            deleteButton.isEnabled = true
-        }
+        
         deleteButton.setTitle("Удалить", for: .normal)
         deleteButton.setTitleColor(UIColor(named: "LabelTertiary"), for: .disabled)
         deleteButton.setTitleColor(UIColor(named: "ColorRed"), for: .normal)
@@ -241,19 +289,21 @@ class TaskViewController: UIViewController {
     
     @objc
     private func deleteButtonTapped(){
-        fileCache.deleteTask(with: "1")
-        fileCache.saveJSON(filename: "hw2")
-        cancellButtonTapped()
+        guard let id = toDoItem?.id else {return}
+        fileCache.deleteTask(with: id)
+        fileCache.saveJSON(filename: "todo_data")
         deleteButton.isEnabled = false
+        delegate?.didUpdate()
     }
     
     @objc
     private func saveButtonTapped(){
+       
         guard let text = textView.text else {return}
         if text == "" || textView.textColor == UIColor(named: "LabelTertiary") {
-            
             return
         }
+        
         var importance = Importance.regular
         var deadline: Date? = nil
         let hexColor: String? = colorPickerView.button.backgroundColor?.toHex
@@ -267,35 +317,37 @@ class TaskViewController: UIViewController {
             deadline = datePicker.date
         }
         
-        toDoItem = TodoItem(id: "1",
-                            text: text,
-                            importance: importance,
-                            deadline: deadline,
-                            hexColor: hexColor)
-        fileCache.addNewTask(toDoItem!)
-        fileCache.saveJSON(filename: "hw2")
+        if(toDoItem == nil){
+            let newItem = TodoItem(
+                                   text: text,
+                                   importance: importance,
+                                   deadline: deadline,
+                                   hexColor: hexColor)
+            self.toDoItem = newItem
+            fileCache.addNewTask(newItem)
+        }
+        else{
+            let newItem = TodoItem(id: (self.toDoItem?.id)!,
+                                   text: text,
+                                   importance: importance,
+                                   deadline: deadline,
+                                   hexColor: hexColor)
+            self.toDoItem = newItem
+            fileCache.addNewTask(newItem)
+        }
+        fileCache.saveJSON(filename: "todo_data")
+        delegate?.didUpdate()
+    
+        self.dismiss(animated: true)
         navBar.saveButton.isEnabled = false
         
     }
     
     @objc
     private func cancellButtonTapped(){
-        toDoItem = nil
-        textView.text = "Что надо сделать?"
-        textView.textColor = UIColor(named: "LabelTertiary")
-        if(deadlineView.switcher.isOn){
-            deadlineView.switcher.setOn(false, animated: true)
-            datePicker.isHidden = true
-            deleteButton.isEnabled = false
-        }
-        deadlineView.date_button.isHidden = true
-        importanceView.control.selectedSegmentIndex = 1
-        colorPickerView.button.backgroundColor = UIColor(named: "LabelPrimary")
-        navBar.cancellButton.isEnabled = false
-        navBar.saveButton.isEnabled = false
-        deleteButton.isEnabled = false
+        viewWillDisappear(true)
+        self.dismiss(animated: true)
     }
-    
     
     
     @objc
@@ -305,7 +357,7 @@ class TaskViewController: UIViewController {
             self.deadlineView.date_button.setTitle(Formatter.date.string(from: self.datePicker.date), for: .normal)
             
         }else{
-        
+            
             self.deadlineView.date_button.isHidden = true
             UIView.animate(withDuration: 0.5, animations:{
                 self.optional_separator.layer.opacity = 0
@@ -364,7 +416,7 @@ extension TaskViewController:UITextViewDelegate{
         if(textView.textColor != UIColor(named: "LabelTertiary")){
             navBar.saveButton.isEnabled = true
             deleteButton.isEnabled = true
-            navBar.cancellButton.isEnabled = true
+            
         }
     }
     func textViewDidEndEditing(_ textView: UITextView) {
@@ -373,6 +425,7 @@ extension TaskViewController:UITextViewDelegate{
             textView.textColor = UIColor(named: "LabelTertiary")
             navBar.saveButton.isEnabled = false
             deleteButton.isEnabled = false
+            
         }
     }
 }

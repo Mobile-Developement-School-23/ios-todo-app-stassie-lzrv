@@ -15,13 +15,13 @@ enum Importance : String, Codable{
 
 struct TodoItem  {
     let id: String
-    let text: String
-    let importance: Importance
-    let deadline: Date?
-    let isDone: Bool
+    var text: String
+    var importance: Importance
+    var deadline: Date?
+    var isDone: Bool
     let creationDate: Date
-    let dateOfChange: Date?
-    let hexColor:String?
+    var dateOfChange: Date?
+    var hexColor:String?
     
     static let CSVseparator = ";"
     
@@ -42,6 +42,19 @@ struct TodoItem  {
         self.creationDate = creationDate
         self.dateOfChange = dateOfChange
         self.hexColor = hexColor
+    }
+    
+   func toggle()->TodoItem{
+        return TodoItem(id: self.id,
+                        text: self.text,
+                        importance: self.importance,
+                        deadline: self.deadline,
+                        isDone: !self.isDone,
+                        creationDate: self.creationDate,
+                        dateOfChange: self.dateOfChange,
+                        hexColor: self.hexColor)
+        
+            
     }
 }
 

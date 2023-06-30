@@ -40,13 +40,13 @@ class ColorPickerView: UIView{
     private func setupConstraints(){
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: 56),
-            label.leadingAnchor.constraint(equalTo:leadingAnchor,constant: 10),
-            label.trailingAnchor.constraint(equalTo:trailingAnchor,constant: -10),
+            label.leadingAnchor.constraint(equalTo:leadingAnchor,constant: 16),
+            label.trailingAnchor.constraint(equalTo:trailingAnchor,constant: -16),
             label.topAnchor.constraint(equalTo: topAnchor),
             label.bottomAnchor.constraint(equalTo: bottomAnchor),
             button.heightAnchor.constraint(equalToConstant: 32),
             button.widthAnchor.constraint(equalToConstant: 32),
-            button.trailingAnchor.constraint(equalTo:trailingAnchor,constant: -10),
+            button.trailingAnchor.constraint(equalTo:trailingAnchor,constant: -16),
             button.topAnchor.constraint(equalTo: topAnchor,constant: 12),
             button.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -12)
         ])
