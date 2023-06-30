@@ -64,11 +64,11 @@ class DeadlineView:UIView {
     private func setupConstraints(){
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: 56),
-            stackView.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
-            stackView.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -16),
             stackView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -8),
-            switcher.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            switcher.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -16),
             switcher.topAnchor.constraint(equalTo: topAnchor,constant: 8),
             switcher.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -8)
         ])

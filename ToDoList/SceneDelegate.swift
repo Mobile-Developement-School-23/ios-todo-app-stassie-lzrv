@@ -24,6 +24,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                                 MainViewController())
         window.rootViewController = navigationController
         self.window = window
+        navigationController.navigationBar.prefersLargeTitles = true
+        navigationController.navigationBar.layoutMargins = UIEdgeInsets(top: 42, left: 32, bottom: 0, right: 0)
+        
         window.makeKeyAndVisible()
     }
     

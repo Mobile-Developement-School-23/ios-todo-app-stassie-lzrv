@@ -11,7 +11,7 @@ import Foundation
 class FileCache{
     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
-    private(set) var todoItemCollection : [TodoItem] = []
+     var todoItemCollection : [TodoItem] = []
     
     func addNewTask(_ new_task : TodoItem){
         if let i = todoItemCollection.firstIndex(where: {$0.id == new_task.id}){

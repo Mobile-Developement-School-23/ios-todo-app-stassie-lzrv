@@ -20,4 +20,7 @@ final class Separator: UIView{
         fatalError("init(coder:) has not been implemented")
     }
     
+    override var alignmentRectInsets: UIEdgeInsets {
+            return UIEdgeInsets(top: 0, left: -16, bottom: 0, right: -16)
+        }
 }
