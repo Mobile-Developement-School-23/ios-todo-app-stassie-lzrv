@@ -32,6 +32,7 @@ class MainViewController: UIViewController{
         setupTableView()
         setupStackView()
         setupAddButton()
+        updateHeader()
     }
     
     
@@ -120,6 +121,7 @@ class MainViewController: UIViewController{
         tableView.register(CustomCell.self, forCellReuseIdentifier: CustomCell.identifier)
         tableView.register(NewCustomCell.self, forCellReuseIdentifier: NewCustomCell.identifier)
         tableView.layer.cornerRadius = 16
+        tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.separatorInset = .zero
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 52, bottom: 0, right: 0)
@@ -292,6 +294,10 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource{
     
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        if indexPath.row == self.currentItems.count{
+            return nil
+        }
+        
         let actionProvider: UIContextMenuActionProvider = { _ in
             return UIMenu(title: "Preview", children: [
                 UIAction(title: "Посмотреть") { [weak self] _ in
@@ -313,12 +319,11 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource{
         let config = UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: {
             [weak self] () -> UIViewController? in
             guard let self = self else { return nil }
+            let controller = TaskViewController()
+            controller.delegate = self
             
             let item = self.currentItems[indexPath.row]
-            
-            let controller = TaskViewController()
             controller.toDoItem = item
-            controller.delegate = self
             controller.configure(with: item)
             
             let navigationController = UINavigationController(rootViewController: controller)
