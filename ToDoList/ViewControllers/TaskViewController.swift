@@ -7,11 +7,11 @@
 
 import Foundation
 import UIKit
-
+import FileCachePackage
 
 
 class TaskViewController: UIViewController {
-    var fileCache = FileCache()
+    var fileCache = FileCache<TodoItem>()
     var toDoItem :TodoItem?
 
     var delegate: UpdateDelegate?
@@ -25,9 +25,9 @@ class TaskViewController: UIViewController {
     private lazy var contentView = UIView()
     private var stackView = UIStackView()
     private let deleteButton = UIButton()
-    private let optional_separator = Separator()
-    private let separator_1 = Separator()
-    private let separator_2 = Separator()
+    private let optionalSeparator = Separator()
+    private let separatorFirst = Separator()
+    private let separatorSecond = Separator()
     
     
     private var isLandscape: Bool = UIDevice.current.orientation.isLandscape {
@@ -36,9 +36,9 @@ class TaskViewController: UIViewController {
             importanceView.isHidden = isLandscape
             deadlineView.isHidden = isLandscape
             colorPickerView.isHidden = isLandscape
-            optional_separator.isHidden = isLandscape
-            separator_1.isHidden = isLandscape
-            separator_2.isHidden = isLandscape
+            optionalSeparator.isHidden = isLandscape
+            separatorFirst.isHidden = isLandscape
+            separatorSecond.isHidden = isLandscape
             if isLandscape {
                 let bounds = UIScreen.main.bounds
                 let minHeight = bounds.height > bounds.width ? bounds.width : bounds.height
@@ -236,16 +236,16 @@ class TaskViewController: UIViewController {
         verticalSV.distribution = .equalSpacing
         verticalSV.layer.cornerRadius = 16
         verticalSV.addArrangedSubview(importanceView)
-        verticalSV.addArrangedSubview(separator_1)
+        verticalSV.addArrangedSubview(separatorFirst)
         verticalSV.addArrangedSubview(colorPickerView)
-        verticalSV.addArrangedSubview(separator_2)
+        verticalSV.addArrangedSubview(separatorSecond)
         
         colorPickerView.button.addTarget(self, action: #selector(colorPickerButtonPressed), for: .touchUpInside)
         
         verticalSV.addArrangedSubview(deadlineView)
-        optional_separator.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        verticalSV.addArrangedSubview(optional_separator)
-        optional_separator.layer.opacity = 0
+        optionalSeparator.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        verticalSV.addArrangedSubview(optionalSeparator)
+        optionalSeparator.layer.opacity = 0
         
         deadlineView.date_button.addTarget(self, action: #selector(showCalendar), for: .touchUpInside)
         deadlineView.date_button.isHidden = true
@@ -307,10 +307,10 @@ class TaskViewController: UIViewController {
         var importance = Importance.regular
         var deadline: Date? = nil
         let hexColor: String? = colorPickerView.button.backgroundColor?.toHex
-        let selected_importance_ind = importanceView.control.selectedSegmentIndex
-        if selected_importance_ind == 0 {
+        let selectedImportanceInd = importanceView.control.selectedSegmentIndex
+        if selectedImportanceInd == 0 {
             importance = .unimportant
-        }else if selected_importance_ind == 2{
+        }else if selectedImportanceInd == 2{
             importance = .important
         }
         if (deadlineView.switcher.isOn){
@@ -360,7 +360,7 @@ class TaskViewController: UIViewController {
             
             self.deadlineView.date_button.isHidden = true
             UIView.animate(withDuration: 0.5, animations:{
-                self.optional_separator.layer.opacity = 0
+                self.optionalSeparator.layer.opacity = 0
                 self.datePicker.isHidden = true
                 self.datePicker.layer.opacity = 0
             })
@@ -373,12 +373,12 @@ class TaskViewController: UIViewController {
         if self.datePicker.isHidden == true{
             UIView.animate(withDuration: 0.5, animations: {
                 self.datePicker.layer.opacity = 1
-                self.optional_separator.layer.opacity = 1
+                self.optionalSeparator.layer.opacity = 1
                 self.datePicker.isHidden = false;
             })
         }else{
             UIView.animate(withDuration: 0.5, animations: {
-                self.optional_separator.layer.opacity = 0
+                self.optionalSeparator.layer.opacity = 0
                 self.datePicker.layer.opacity = 0
                 self.datePicker.isHidden = true;
             })
@@ -393,7 +393,8 @@ class TaskViewController: UIViewController {
     @objc
     func keyboardWillShow(_ notification: Notification){
         let userInfo = notification.userInfo
-        let kbFrameSize = (userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        guard let keyboardFrame = userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {return}
+        let kbFrameSize = keyboardFrame.cgRectValue
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: kbFrameSize.height, right: 0)
         
     }

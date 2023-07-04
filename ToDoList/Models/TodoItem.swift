@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FileCachePackage
 
 enum Importance : String, Codable{
     case important
@@ -13,7 +14,7 @@ enum Importance : String, Codable{
     case unimportant
 }
 
-struct TodoItem  {
+struct TodoItem :IdentifiableType {
     let id: String
     var text: String
     var importance: Importance
@@ -59,7 +60,10 @@ struct TodoItem  {
 }
 
 
-extension TodoItem {
+extension TodoItem : JSONConvertible{
+
+   
+    
     static func parse(json: Any) -> TodoItem? {
         // Обязательнеы поля - text, isDone, creationDate и id
         guard let dict = json as? [String : Any],
@@ -67,7 +71,7 @@ extension TodoItem {
               let creationDateString = dict["creationDate"] as? String,
               let creationDate = Formatter.date.date(from: creationDateString),
               let id = dict["id"] as? String,
-              let IsDone = dict["isDone"] as? Bool
+              let isDone = dict["isDone"] as? Bool
         else {return nil}
         
         let importanceString = dict["importance"] as? String ?? "regular"
@@ -81,7 +85,7 @@ extension TodoItem {
                         text: text,
                         importance: importance,
                         deadline: deadline,
-                        isDone: IsDone,
+                        isDone: isDone,
                         creationDate: creationDate,
                         dateOfChange: dateofChange,
                         hexColor: hexColor)

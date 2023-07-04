@@ -7,10 +7,11 @@
 
 import UIKit
 import LocalAuthentication
+import FileCachePackage
 
 class MainViewController: UIViewController{
     
-    let fileCache = FileCache()
+    let fileCache = FileCache<TodoItem>()
     let fileName = "todo_data"
     let tableView = UITableView(frame: .zero, style: .insetGrouped)
     let stackView = UIStackView()
@@ -97,7 +98,7 @@ class MainViewController: UIViewController{
     
     @objc
     private func showButtonTapped(){
-        let button = stackView.arrangedSubviews[1] as! UIButton
+        guard let button = stackView.arrangedSubviews[1] as? UIButton else {return}
         let sorted = fileCache.todoItemCollection.filter { !$0.isDone  }
         
         if !doneAreHidden{
@@ -175,7 +176,7 @@ class MainViewController: UIViewController{
     }
     
     func updateHeader(){
-        var label = stackView.arrangedSubviews[0] as! UILabel
+        guard var label = stackView.arrangedSubviews[0] as? UILabel else {return}
         label.text = "Выполнено - \(fileCache.todoItemCollection.filter({$0.isDone == true}).count)"
     }
     
@@ -218,8 +219,8 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         if indexPath.row == self.currentItems.count {
-            let new_cell = tableView.dequeueReusableCell(withIdentifier: NewCustomCell.identifier, for: indexPath)
-            guard let inputCell = new_cell as? NewCustomCell else {
+            let newCell = tableView.dequeueReusableCell(withIdentifier: NewCustomCell.identifier, for: indexPath)
+            guard let inputCell = newCell as? NewCustomCell else {
                 return UITableViewCell()
             }
             inputCell.action = { [weak self]  in
