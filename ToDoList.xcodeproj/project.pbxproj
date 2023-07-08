@@ -14,7 +14,10 @@
 		8104C3672A4B200B009793DC /* DeadlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8104C3662A4B200B009793DC /* DeadlineView.swift */; };
 		8104C3692A4B30F7009793DC /* ColorPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8104C3682A4B30F7009793DC /* ColorPickerView.swift */; };
 		813FBCDC2A424C300022FEAB /* UIView+Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813FBCDB2A424C300022FEAB /* UIView+Pin.swift */; };
-		815BB1BA2A56E4F800E5CF9F /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815BB1B92A56E4F800E5CF9F /* Service.swift */; };
+		815BB1BA2A56E4F800E5CF9F /* URLSession+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815BB1B92A56E4F800E5CF9F /* URLSession+.swift */; };
+		815BB1C22A58F7C900E5CF9F /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815BB1C12A58F7C900E5CF9F /* Service.swift */; };
+		815BB1C42A58F7D400E5CF9F /* RequestProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815BB1C32A58F7D400E5CF9F /* RequestProcessor.swift */; };
+		815BB1C62A58F7DC00E5CF9F /* NetworkToDoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815BB1C52A58F7DB00E5CF9F /* NetworkToDoItem.swift */; };
 		817194B82A4BB220009550E0 /* Date+Formatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817194B72A4BB220009550E0 /* Date+Formatter.swift */; };
 		817194BA2A4BB280009550E0 /* Keyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817194B92A4BB280009550E0 /* Keyboard.swift */; };
 		817194BD2A4C780D009550E0 /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817194BC2A4C780D009550E0 /* CustomCell.swift */; };
@@ -71,7 +74,10 @@
 		8104C3662A4B200B009793DC /* DeadlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineView.swift; sourceTree = "<group>"; };
 		8104C3682A4B30F7009793DC /* ColorPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerView.swift; sourceTree = "<group>"; };
 		813FBCDB2A424C300022FEAB /* UIView+Pin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Pin.swift"; sourceTree = "<group>"; };
-		815BB1B92A56E4F800E5CF9F /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		815BB1B92A56E4F800E5CF9F /* URLSession+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSession+.swift"; sourceTree = "<group>"; };
+		815BB1C12A58F7C900E5CF9F /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		815BB1C32A58F7D400E5CF9F /* RequestProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestProcessor.swift; sourceTree = "<group>"; };
+		815BB1C52A58F7DB00E5CF9F /* NetworkToDoItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkToDoItem.swift; sourceTree = "<group>"; };
 		817194B72A4BB220009550E0 /* Date+Formatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Formatter.swift"; sourceTree = "<group>"; };
 		817194B92A4BB280009550E0 /* Keyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keyboard.swift; sourceTree = "<group>"; };
 		817194BC2A4C780D009550E0 /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
@@ -153,7 +159,10 @@
 		815BB1B42A54C6A800E5CF9F /* Service */ = {
 			isa = PBXGroup;
 			children = (
-				815BB1B92A56E4F800E5CF9F /* Service.swift */,
+				815BB1C52A58F7DB00E5CF9F /* NetworkToDoItem.swift */,
+				815BB1B92A56E4F800E5CF9F /* URLSession+.swift */,
+				815BB1C32A58F7D400E5CF9F /* RequestProcessor.swift */,
+				815BB1C12A58F7C900E5CF9F /* Service.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -512,8 +521,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				81DF9DDB2A4F2B840045B2BB /* Transition.swift in Sources */,
-				815BB1BA2A56E4F800E5CF9F /* Service.swift in Sources */,
+				815BB1BA2A56E4F800E5CF9F /* URLSession+.swift in Sources */,
 				81C959F12A3A6D3300EE5003 /* MainViewController.swift in Sources */,
+				815BB1C62A58F7DC00E5CF9F /* NetworkToDoItem.swift in Sources */,
 				81C959ED2A3A6D3300EE5003 /* AppDelegate.swift in Sources */,
 				81C95A1D2A3A6E6F00EE5003 /* TodoItem.swift in Sources */,
 				8104C3652A4B1A3A009793DC /* ImportanceView.swift in Sources */,
@@ -521,6 +531,7 @@
 				8192A1BD2A46590C00B02259 /* Separator.swift in Sources */,
 				81DF9DD22A4DDBE40045B2BB /* UpdateDelegate.swift in Sources */,
 				817194BD2A4C780D009550E0 /* CustomCell.swift in Sources */,
+				815BB1C22A58F7C900E5CF9F /* Service.swift in Sources */,
 				81DF9DE32A4F5FD40045B2BB /* Logger.swift in Sources */,
 				817194BA2A4BB280009550E0 /* Keyboard.swift in Sources */,
 				8104C3672A4B200B009793DC /* DeadlineView.swift in Sources */,
@@ -531,6 +542,7 @@
 				813FBCDC2A424C300022FEAB /* UIView+Pin.swift in Sources */,
 				817194C12A4CD6CA009550E0 /* DeadlineLabel.swift in Sources */,
 				81F8243B2A41D85A00BE2343 /* TaskViewController.swift in Sources */,
+				815BB1C42A58F7D400E5CF9F /* RequestProcessor.swift in Sources */,
 				8104C3692A4B30F7009793DC /* ColorPickerView.swift in Sources */,
 				81DF9DDE2A4F2BD30045B2BB /* Animator.swift in Sources */,
 				8192A1C22A4675DD00B02259 /* UIColor+.swift in Sources */,
