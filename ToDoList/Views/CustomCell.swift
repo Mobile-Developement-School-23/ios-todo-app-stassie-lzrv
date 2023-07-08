@@ -132,7 +132,7 @@ class CustomCell: UITableViewCell{
         VstackView.arrangedSubviews[1].isHidden = false
         unstrikethrough()
         
-        if model.importance == .regular {
+        if model.importance == .basic {
             HstackView.arrangedSubviews[0].isHidden = true
             HstackView.arrangedSubviews[1].isHidden = true
         }else if model.importance == .important{

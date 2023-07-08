@@ -11,7 +11,16 @@ import FileCachePackage
 
 class MainViewController: UIViewController{
     
-    let fileCache = FileCache<TodoItem>()
+    private lazy var activityIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.center = view.center
+        activityIndicator.hidesWhenStopped = true
+        
+        return activityIndicator
+    }()
+    private let networkFetcher: NetworkService = Service()
+    
+    public let fileCache = FileCache<TodoItem>()
     let fileName = "todo_data"
     let tableView = UITableView(frame: .zero, style: .insetGrouped)
     let stackView = UIStackView()
@@ -22,25 +31,38 @@ class MainViewController: UIViewController{
     var selectedCellImageViewSnapshot: UIView?
     var animator: Animator?
     
+    private let alert: UIAlertController = {
+        let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        return alert
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "BackPrimary")
         title = "Мои дела"
-        loadData()
+        fileCache.loadJSON(filename: fileName)
+        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
         view.addSubview(tableView)
         view.addSubview(stackView)
         setupTableView()
         setupStackView()
         setupAddButton()
+        loadTasks()
         updateHeader()
+        setupActivityIndicator()
+        
     }
     
-    
-    private func loadData(){
-        fileCache.loadJSON(filename: fileName)
-        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
+    private func setupActivityIndicator() {
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.color = .blue
+        view.addSubview(activityIndicator)
         
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
     }
     
     private func setupStackView(){
@@ -140,12 +162,12 @@ class MainViewController: UIViewController{
     
     private func openTaskView(with model: TodoItem? = nil){
         
-        
-        
         guard let model = model else {
             let controller = TaskViewController()
             controller.delegate = self
+            
             self.present( controller, animated: true)
+            
             return
         }
         
@@ -169,9 +191,14 @@ class MainViewController: UIViewController{
         fileCache.todoItemCollection[ind].isDone = !fileCache.todoItemCollection[ind].isDone
         
         fileCache.saveJSON(filename: fileName)
-        loadData()
+        
+        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
         tableView.reloadData()
         updateHeader()
+        
+        saveCell(fileCache.todoItemCollection[ind], isNewItem: false)
+        
+        
         
     }
     
@@ -183,14 +210,22 @@ class MainViewController: UIViewController{
     func delete(at indexPath: IndexPath) {
         
         let id = currentItems[indexPath.row].id
-        
+        let todoItem = currentItems[indexPath.row]
         fileCache.deleteTask(with: id)
         fileCache.saveJSON(filename: fileName)
+        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
         
-        
-        loadData()
         tableView.reloadData()
         updateHeader()
+        Task {
+            do {
+                try await networkFetcher.deleteRask(toDoItem: todoItem)
+            }  catch {
+                debugPrint(error)
+                fileCache.isDirty = true
+            }
+        }
+        
     }
 }
 
@@ -344,11 +379,60 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource{
 
 
 extension MainViewController: UpdateDelegate{
-    func didUpdate(){
-        loadData()
+    func saveCell(_ toDoItem: TodoItem, isNewItem: Bool) {
+        fileCache.addNewTask(toDoItem)
+        fileCache.saveJSON(filename: "todo_data")
+        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
         tableView.reloadData()
         updateHeader()
+        
+        fileCache.saveJSON(filename: "todo_data")
+       
+        
+        guard !fileCache.isDirty else {
+            updateTasks()
+            return
+        }
+        Task {
+            do {
+                if isNewItem {
+                    try await networkFetcher.addNewTask(toDoItem: toDoItem)
+                } else {
+                    try await networkFetcher.changeTask(toDoItem: toDoItem)
+                }
+            } catch {
+                debugPrint(error)
+                fileCache.isDirty = true
+            }
+        }
     }
+    
+    func deleteCell(_ toDoItem: TodoItem, _ reloadTable: Bool) {
+        fileCache.deleteTask(with: toDoItem.id)
+        fileCache.saveJSON(filename: fileName)
+        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
+        tableView.reloadData()
+        updateHeader()
+        
+            fileCache.saveJSON(filename: "todo_data")
+        
+        
+        if reloadTable { tableView.reloadData() }
+        guard !fileCache.isDirty else {
+            updateTasks()
+            return
+        }
+        Task {
+            do {
+                try await networkFetcher.deleteRask(toDoItem: toDoItem)
+            }  catch {
+                debugPrint(error)
+                fileCache.isDirty = true
+            }
+        }
+    }
+    
+    
 }
 
 extension MainViewController{
@@ -358,4 +442,51 @@ extension MainViewController{
         alert.addAction(dismissAction)
         present(alert, animated: true)
     }
+}
+
+
+extension MainViewController{
+    public func loadTasks() {
+        activityIndicator.startAnimating()
+        _ = Task {
+            do {
+                let toDoItems = try await networkFetcher.getAll()
+                fileCache.todoItemCollection = toDoItems
+                currentItems = toDoItems
+                fileCache.isDirty = false
+                tableView.reloadData()
+                updateHeader()
+                activityIndicator.stopAnimating()
+            } catch {
+                debugPrint(error)
+                    fileCache.loadJSON(filename: "todo_data")
+                    currentItems = fileCache.todoItemCollection
+                    tableView.reloadData()
+                    updateHeader()
+                
+                fileCache.isDirty = true
+                activityIndicator.stopAnimating()
+            }
+        }
+        
+    }
+    
+    
+    private func updateTasks() {
+        
+        Task {
+            do {
+                let toDoItems = try await networkFetcher.updateAll(toDoItems: fileCache.todoItemCollection)
+                fileCache.todoItemCollection = toDoItems
+                currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
+                fileCache.isDirty = false
+                tableView.reloadData()
+                updateHeader()
+            } catch {
+                print(error)
+                fileCache.isDirty = true
+            }
+        }
+    }
+    
 }

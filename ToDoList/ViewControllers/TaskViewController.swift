@@ -13,10 +13,10 @@ import FileCachePackage
 class TaskViewController: UIViewController {
     var fileCache = FileCache<TodoItem>()
     var toDoItem :TodoItem?
-
+    
     var delegate: UpdateDelegate?
     
-     let navBar = NavBar()
+    let navBar = NavBar()
     private let importanceView = ImportanceView()
     private let deadlineView = DeadlineView()
     private let colorPickerView = ColorPickerView()
@@ -49,7 +49,7 @@ class TaskViewController: UIViewController {
             }
         }
     }
-
+    
     
     
     let textView : UITextView = {
@@ -66,7 +66,7 @@ class TaskViewController: UIViewController {
         textView.layer.cornerRadius = 16
         return textView
     }()
-
+    
     
     
     private let datePicker : UIDatePicker = {
@@ -99,7 +99,6 @@ class TaskViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        delegate?.didUpdate()
         
     }
     
@@ -109,7 +108,7 @@ class TaskViewController: UIViewController {
         UIView.animate(withDuration: 0.4) {
             self.navBar.layer.opacity = 1
             self.textView.layer.opacity = 1
-
+            
             self.deleteButton.alpha = 1
             self.stackView.arrangedSubviews[1].layer.opacity = 1
         }
@@ -131,7 +130,7 @@ class TaskViewController: UIViewController {
         navBar.saveButton.isEnabled = true
         deleteButton.isEnabled = true
         
-        if toDoItem?.importance == .unimportant {
+        if toDoItem?.importance == .low {
             importanceView.control.selectedSegmentIndex = 0
         } else if toDoItem?.importance == .important {
             importanceView.control.selectedSegmentIndex = 2
@@ -293,23 +292,24 @@ class TaskViewController: UIViewController {
         fileCache.deleteTask(with: id)
         fileCache.saveJSON(filename: "todo_data")
         deleteButton.isEnabled = false
-        delegate?.didUpdate()
+        delegate?.deleteCell(self.toDoItem!, true)
+        self.dismiss(animated: true)
     }
     
     @objc
     private func saveButtonTapped(){
-       
+        
         guard let text = textView.text else {return}
         if text == "" || textView.textColor == UIColor(named: "LabelTertiary") {
             return
         }
         
-        var importance = Importance.regular
+        var importance = Importance.basic
         var deadline: Date? = nil
         let hexColor: String? = colorPickerView.button.backgroundColor?.toHex
         let selectedImportanceInd = importanceView.control.selectedSegmentIndex
         if selectedImportanceInd == 0 {
-            importance = .unimportant
+            importance = .low
         }else if selectedImportanceInd == 2{
             importance = .important
         }
@@ -319,12 +319,13 @@ class TaskViewController: UIViewController {
         
         if(toDoItem == nil){
             let newItem = TodoItem(
-                                   text: text,
-                                   importance: importance,
-                                   deadline: deadline,
-                                   hexColor: hexColor)
+                text: text,
+                importance: importance,
+                deadline: deadline,
+                hexColor: hexColor)
             self.toDoItem = newItem
             fileCache.addNewTask(newItem)
+            delegate?.saveCell(self.toDoItem!, isNewItem: true)
         }
         else{
             let newItem = TodoItem(id: (self.toDoItem?.id)!,
@@ -334,12 +335,14 @@ class TaskViewController: UIViewController {
                                    hexColor: hexColor)
             self.toDoItem = newItem
             fileCache.addNewTask(newItem)
+            
+            delegate?.saveCell(self.toDoItem!, isNewItem: false)
+            
         }
         fileCache.saveJSON(filename: "todo_data")
-        delegate?.didUpdate()
-    
         self.dismiss(animated: true)
         navBar.saveButton.isEnabled = false
+        
         
     }
     
