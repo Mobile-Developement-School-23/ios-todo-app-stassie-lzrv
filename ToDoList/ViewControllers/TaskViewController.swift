@@ -7,11 +7,10 @@
 
 import Foundation
 import UIKit
-import FileCachePackage
 
 
 class TaskViewController: UIViewController {
-    var fileCache = FileCache<TodoItem>()
+    var fileCache: FileCacheProtocol = FileCacheCoreData()
     var toDoItem :TodoItem?
     
     var delegate: UpdateDelegate?
@@ -80,7 +79,7 @@ class TaskViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        fileCache.loadJSON(filename: "todo_data")
+        fileCache.load()
         self.hideKeyboardWhenTappedAround()
         self.registerForKeyboardNotification()
         view.backgroundColor = UIColor(named: "BackPrimary")
@@ -289,10 +288,9 @@ class TaskViewController: UIViewController {
     @objc
     private func deleteButtonTapped(){
         guard let id = toDoItem?.id else {return}
-        fileCache.deleteTask(with: id)
-        fileCache.saveJSON(filename: "todo_data")
+        fileCache.delete(with: id)
         deleteButton.isEnabled = false
-        delegate?.deleteCell(self.toDoItem!, true)
+        delegate?.didUpdate()
         self.dismiss(animated: true)
     }
     
@@ -324,22 +322,18 @@ class TaskViewController: UIViewController {
                 deadline: deadline,
                 hexColor: hexColor)
             self.toDoItem = newItem
-            fileCache.addNewTask(newItem)
-            delegate?.saveCell(self.toDoItem!, isNewItem: true)
-        }
-        else{
+            fileCache.insert(item: newItem)
+        } else{
             let newItem = TodoItem(id: (self.toDoItem?.id)!,
                                    text: text,
                                    importance: importance,
                                    deadline: deadline,
                                    hexColor: hexColor)
             self.toDoItem = newItem
-            fileCache.addNewTask(newItem)
-            
-            delegate?.saveCell(self.toDoItem!, isNewItem: false)
-            
+            fileCache.update(item: newItem)
         }
-        fileCache.saveJSON(filename: "todo_data")
+        
+        delegate?.didUpdate()
         self.dismiss(animated: true)
         navBar.saveButton.isEnabled = false
         
