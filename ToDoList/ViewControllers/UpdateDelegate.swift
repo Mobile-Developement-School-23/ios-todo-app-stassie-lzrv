@@ -8,6 +8,5 @@
 import Foundation
 
 protocol UpdateDelegate: AnyObject{
-    func saveCell(_ toDoItem: TodoItem, isNewItem: Bool)
-    func deleteCell(_ toDoItem: TodoItem, _ reloadTable: Bool)
+    func didUpdate()
 }

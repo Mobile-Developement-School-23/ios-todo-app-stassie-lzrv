@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import FileCachePackage
+import CoreData
+import SQLite
 
 enum Importance : String, Codable{
     case important
@@ -14,14 +15,14 @@ enum Importance : String, Codable{
     case low
 }
 
-public struct TodoItem :IdentifiableType,Codable, Sendable {
+public struct TodoItem  {
     public let id: String
     var text: String
     var importance: Importance
     var deadline: Date?
     var isDone: Bool
     let creationDate: Date
-    var dateOfChange: Date
+    var dateOfChange: Date?
     var hexColor:String?
     
     static let CSVseparator = ";"
@@ -45,25 +46,10 @@ public struct TodoItem :IdentifiableType,Codable, Sendable {
         self.hexColor = hexColor
     }
     
-   func toggle()->TodoItem{
-        return TodoItem(id: self.id,
-                        text: self.text,
-                        importance: self.importance,
-                        deadline: self.deadline,
-                        isDone: !self.isDone,
-                        creationDate: self.creationDate,
-                        dateOfChange: self.dateOfChange,
-                        hexColor: self.hexColor)
-        
-            
-    }
 }
 
 
-extension TodoItem : JSONConvertible{
-
-   
-    
+extension TodoItem {
     public static func parse(json: Any) -> TodoItem? {
         // Обязательнеы поля - text, isDone, creationDate и id
         guard let dict = json as? [String : Any],
@@ -99,7 +85,7 @@ extension TodoItem : JSONConvertible{
             "text" : text,
             "isDone" : isDone,
             "creationDate" : Formatter.date.string(from: creationDate),
-            "dateOfChange" : Formatter.date.string(from: dateOfChange)
+            "dateOfChange" : Formatter.date.string(from: dateOfChange ?? Date())
         ]
         if importance != .basic{
             dictionary["importance"] = importance.rawValue
@@ -107,7 +93,7 @@ extension TodoItem : JSONConvertible{
         if let deadline = deadline{
             dictionary["deadline"] = Formatter.date.string(from: deadline)
         }
-       
+        
         if let hexColor = hexColor {
             dictionary["hexColor"] = hexColor
         }
@@ -140,7 +126,7 @@ extension TodoItem {
         let importance = Importance(rawValue: lines[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? .basic
         let deadline = Formatter.date.date(from: lines[5].trimmingCharacters(in: .whitespacesAndNewlines)) ?? nil
         let dateOfChange =  Formatter.date.date(from: lines[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date()
-       
+        
         return TodoItem(id: id ,
                         text: text,
                         importance: importance,
@@ -163,8 +149,8 @@ extension TodoItem {
         }
         
         string += ";"
-       
-            string += "\(Formatter.date.string(from: dateOfChange))"
+        
+        string += "\(Formatter.date.string(from: dateOfChange ?? Date()))"
         
         
         return string
@@ -229,4 +215,117 @@ extension TodoItem{
         return networkItem
     }
     
+}
+
+extension TodoItem {
+    static func parse(entity: ToDoItemEntity) -> TodoItem? {
+        guard let id = entity.id,
+              let text = entity.text,
+              let importance = Importance(rawValue: entity.importance ?? "basic")
+                
+        else { return nil }
+        let isDode = entity.isDone
+        let deadline : Date? = entity.deadline
+        let dateOfChange = entity.dateOfChange
+        let creationDate = entity.creationDate
+        
+        return TodoItem(id: id,
+                        text: text,
+                        importance: importance,
+                        deadline: deadline,
+                        isDone: isDode,
+                        creationDate: creationDate ?? Date(),
+                        dateOfChange: dateOfChange ?? Date()
+        )
+    }
+    
+    var coreDataEntity: ToDoItemEntity? {
+        let context = CoreDataContainer.shared.persistentContainer.viewContext
+        
+        guard let entity = NSEntityDescription.entity(forEntityName: "ToDoItemEntity", in: context)
+        else { return nil }
+        
+        let toDoItemObject = ToDoItemEntity(entity: entity, insertInto: nil)
+        toDoItemObject.id = id
+        toDoItemObject.text = text
+        toDoItemObject.importance = importance.rawValue
+        toDoItemObject.creationDate = creationDate
+        toDoItemObject.deadline = deadline
+        toDoItemObject.dateOfChange = dateOfChange
+        toDoItemObject.isDone = isDone
+        
+        
+        return toDoItemObject
+    }
+}
+
+extension TodoItem {
+    static func parse(dbRow: Statement.Element) -> TodoItem? {
+        guard let id = dbRow[0] as? String,
+              let text = dbRow[1] as? String,
+              let creationDateBinding = dbRow[2]
+        else {
+            print("Invalid item from db")
+            return nil
+        }
+        
+        guard let creationDateMS = creationDateBinding as? Double
+        else { return nil }
+        let creationDate = Date(timeIntervalSince1970: creationDateMS)
+        
+        // считываем importance
+        var importance = Importance.basic
+        if let importanceStr = dbRow[3] as? String {
+            importance = Importance.init(rawValue:  importanceStr) ?? .basic
+        }
+        // считываем deadlineDate
+        let deadlineDate = (dbRow[4] as? Double)
+            .flatMap(Date.init(timeIntervalSince1970:))
+        // считываем changeDate
+        let changeDate = (dbRow[5] as? Double)
+            .flatMap(Date.init(timeIntervalSince1970:)) ?? Date()
+        // считываем isClosed
+        let isDone = dbRow[6] as? Bool ?? false
+        
+        return TodoItem(id: id,
+                        text: text,
+                        importance: importance,
+                        deadline: deadlineDate,
+                        isDone: isDone,
+                        creationDate: creationDate,
+                        dateOfChange: changeDate)
+    }
+    
+    var sqlReplaceStatement: String {
+        let itemFieldKeys = ["id",
+                             "text",
+                             "creationDate",
+                             "importance",
+                             "deadline",
+                             "dateOfChange",
+                             "isDone"]
+        let columns = itemFieldKeys[1...].reduce("\"\(itemFieldKeys[0])\"", { "\($0), \"\($1)\"" })
+        
+        var deadlineDateStr = ""
+        if let unwDeadlineDate = deadline {
+            deadlineDateStr = "\(unwDeadlineDate.timeIntervalSince1970)"
+        }
+        var changeDateStr = ""
+        if let unwChangeDate = dateOfChange {
+            changeDateStr = "\(unwChangeDate.timeIntervalSince1970)"
+        }
+        let itemValues = [id,
+                          text,
+                          "\(creationDate.timeIntervalSince1970)",
+                          "\(importance.rawValue)",
+                          deadlineDateStr,
+                          changeDateStr,
+                          "\(isDone)"]
+        let values = itemValues[1...].reduce("'\(itemValues[0])'", { "\($0), '\($1)'" })
+        let path = NSSearchPathForDirectoriesInDomains(
+            .documentDirectory, .userDomainMask, true
+        ).first!
+        let request = "INSERT OR REPLACE INTO \"\(path)/db.sqlite3\" (\(columns)) VALUES (\(values))"
+        return request
+    }
 }

@@ -7,7 +7,7 @@
 
 import UIKit
 import LocalAuthentication
-import FileCachePackage
+
 
 class MainViewController: UIViewController{
     
@@ -18,10 +18,7 @@ class MainViewController: UIViewController{
         
         return activityIndicator
     }()
-    private let networkFetcher: NetworkService = Service()
-    
-    public let fileCache = FileCache<TodoItem>()
-    let fileName = "todo_data"
+    var fileCache: FileCacheProtocol = FileCacheCoreData()
     let tableView = UITableView(frame: .zero, style: .insetGrouped)
     let stackView = UIStackView()
     var currentItems :[TodoItem] = []
@@ -30,6 +27,8 @@ class MainViewController: UIViewController{
     var selectedCell : CustomCell?
     var selectedCellImageViewSnapshot: UIView?
     var animator: Animator?
+    var switcher = UISwitch()
+    let labelDB = UILabel()
     
     private let alert: UIAlertController = {
         let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
@@ -41,33 +40,35 @@ class MainViewController: UIViewController{
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "BackPrimary")
         title = "Мои дела"
-        fileCache.loadJSON(filename: fileName)
-        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
+        loadData()
         view.addSubview(tableView)
         view.addSubview(stackView)
         setupTableView()
         setupStackView()
         setupAddButton()
-        loadTasks()
         updateHeader()
-        setupActivityIndicator()
         
     }
     
-    private func setupActivityIndicator() {
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        activityIndicator.color = .blue
-        view.addSubview(activityIndicator)
+    private func loadData(){
+        fileCache.load()
+        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
         
-        NSLayoutConstraint.activate([
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
     }
-    
+    @objc private func switcherPressed(){
+        if switcher.isOn{
+            labelDB.text = "SQLite"
+            fileCache = FileCacheSQLite()
+            didUpdate()
+        }else{
+            labelDB.text = "CoreData"
+            fileCache = FileCacheCoreData()
+            didUpdate()
+        }
+    }
     private func setupStackView(){
         stackView.axis = .horizontal
-        
+        stackView.distribution = .fillProportionally
         let label = UILabel()
         label.text = "Выполнено - 0"
         label.textColor = UIColor(named: "LabelTertiary")
@@ -79,8 +80,18 @@ class MainViewController: UIViewController{
         button.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
         button.addTarget(self, action: #selector(showButtonTapped), for: .touchUpInside)
         stackView.addArrangedSubview(button)
+        let sv = UIStackView()
+        sv.axis = .vertical
+        sv.alignment = .center
+        sv.spacing = 2
+        labelDB.text = "CoreData"
+        labelDB.textColor = UIColor(named: "LabelTertiary")
+        labelDB.font = .systemFont(ofSize: 15)
+        sv.addArrangedSubview(labelDB)
+        sv.addArrangedSubview(switcher)
+        switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
         
-        
+        stackView.addArrangedSubview(sv)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor,constant: 32),
@@ -91,8 +102,7 @@ class MainViewController: UIViewController{
     }
     
     private func setupAddButton(){
-        
-        var button = UIButton()
+        let button = UIButton()
         button.setImage(UIImage(named: "plus"), for: .normal)
         button.contentVerticalAlignment = .fill
         button.contentHorizontalAlignment = .fill
@@ -161,13 +171,11 @@ class MainViewController: UIViewController{
     
     
     private func openTaskView(with model: TodoItem? = nil){
-        
         guard let model = model else {
             let controller = TaskViewController()
             controller.delegate = self
-            
+            controller.fileCache = fileCache
             self.present( controller, animated: true)
-            
             return
         }
         
@@ -175,6 +183,7 @@ class MainViewController: UIViewController{
         controller.transitioningDelegate = self
         controller.toDoItem = model
         controller.delegate = self
+        controller.fileCache = fileCache
         controller.configure(with: model)
         
         self.present(controller,animated: true)
@@ -184,47 +193,26 @@ class MainViewController: UIViewController{
     
     func changeStatus(on: TodoItem, at: IndexPath){
         guard let ind  = fileCache.todoItemCollection.firstIndex(where: {$0.id == on.id}) else {
-            
             return
         }
-        
         fileCache.todoItemCollection[ind].isDone = !fileCache.todoItemCollection[ind].isDone
-        
-        fileCache.saveJSON(filename: fileName)
-        
-        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
+        fileCache.update(item: fileCache.todoItemCollection[ind])
+        loadData()
         tableView.reloadData()
         updateHeader()
-        
-        saveCell(fileCache.todoItemCollection[ind], isNewItem: false)
-        
-        
-        
     }
     
     func updateHeader(){
-        guard var label = stackView.arrangedSubviews[0] as? UILabel else {return}
+        guard let label = stackView.arrangedSubviews[0] as? UILabel else {return}
         label.text = "Выполнено - \(fileCache.todoItemCollection.filter({$0.isDone == true}).count)"
     }
     
     func delete(at indexPath: IndexPath) {
-        
         let id = currentItems[indexPath.row].id
-        let todoItem = currentItems[indexPath.row]
-        fileCache.deleteTask(with: id)
-        fileCache.saveJSON(filename: fileName)
-        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
-        
+        fileCache.delete(with: id)
+        loadData()
         tableView.reloadData()
         updateHeader()
-        Task {
-            do {
-                try await networkFetcher.deleteRask(toDoItem: todoItem)
-            }  catch {
-                debugPrint(error)
-                fileCache.isDirty = true
-            }
-        }
         
     }
 }
@@ -379,114 +367,9 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource{
 
 
 extension MainViewController: UpdateDelegate{
-    func saveCell(_ toDoItem: TodoItem, isNewItem: Bool) {
-        fileCache.addNewTask(toDoItem)
-        fileCache.saveJSON(filename: "todo_data")
-        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
+    func didUpdate(){
+        loadData()
         tableView.reloadData()
         updateHeader()
-        
-        fileCache.saveJSON(filename: "todo_data")
-       
-        
-        guard !fileCache.isDirty else {
-            updateTasks()
-            return
-        }
-        Task {
-            do {
-                if isNewItem {
-                    try await networkFetcher.addNewTask(toDoItem: toDoItem)
-                } else {
-                    try await networkFetcher.changeTask(toDoItem: toDoItem)
-                }
-            } catch {
-                debugPrint(error)
-                fileCache.isDirty = true
-            }
-        }
     }
-    
-    func deleteCell(_ toDoItem: TodoItem, _ reloadTable: Bool) {
-        fileCache.deleteTask(with: toDoItem.id)
-        fileCache.saveJSON(filename: fileName)
-        currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
-        tableView.reloadData()
-        updateHeader()
-        
-            fileCache.saveJSON(filename: "todo_data")
-        
-        
-        if reloadTable { tableView.reloadData() }
-        guard !fileCache.isDirty else {
-            updateTasks()
-            return
-        }
-        Task {
-            do {
-                try await networkFetcher.deleteRask(toDoItem: toDoItem)
-            }  catch {
-                debugPrint(error)
-                fileCache.isDirty = true
-            }
-        }
-    }
-    
-    
-}
-
-extension MainViewController{
-    private func showAlert(title: String, message: String){
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let dismissAction = UIAlertAction(title: "Отмена", style: .cancel)
-        alert.addAction(dismissAction)
-        present(alert, animated: true)
-    }
-}
-
-
-extension MainViewController{
-    public func loadTasks() {
-        activityIndicator.startAnimating()
-        _ = Task {
-            do {
-                let toDoItems = try await networkFetcher.getAll()
-                fileCache.todoItemCollection = toDoItems
-                currentItems = toDoItems
-                fileCache.isDirty = false
-                tableView.reloadData()
-                updateHeader()
-                activityIndicator.stopAnimating()
-            } catch {
-                debugPrint(error)
-                    fileCache.loadJSON(filename: "todo_data")
-                    currentItems = fileCache.todoItemCollection
-                    tableView.reloadData()
-                    updateHeader()
-                
-                fileCache.isDirty = true
-                activityIndicator.stopAnimating()
-            }
-        }
-        
-    }
-    
-    
-    private func updateTasks() {
-        
-        Task {
-            do {
-                let toDoItems = try await networkFetcher.updateAll(toDoItems: fileCache.todoItemCollection)
-                fileCache.todoItemCollection = toDoItems
-                currentItems = doneAreHidden ? fileCache.todoItemCollection.filter { !$0.isDone  } : fileCache.todoItemCollection
-                fileCache.isDirty = false
-                tableView.reloadData()
-                updateHeader()
-            } catch {
-                print(error)
-                fileCache.isDirty = true
-            }
-        }
-    }
-    
 }
