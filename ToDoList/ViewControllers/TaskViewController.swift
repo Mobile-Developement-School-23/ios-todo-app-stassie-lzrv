@@ -13,7 +13,7 @@ class TaskViewController: UIViewController {
     var fileCache: FileCacheProtocol = FileCacheCoreData()
     var toDoItem :TodoItem?
     
-    var delegate: UpdateDelegate?
+    weak var delegate: UpdateDelegate?
     
     let navBar = NavBar()
     private let importanceView = ImportanceView()
@@ -150,110 +150,7 @@ class TaskViewController: UIViewController {
         
     }
     
-    private func setupScrollView(){
-        scrollView.backgroundColor = UIColor(named: "BackPrimary")
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.showsVerticalScrollIndicator = true
-        
-        view.addSubview(scrollView)
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,constant: 56),
-            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
-    }
-    
-    private func setupContentView(){
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentView)
-        NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor,constant: 20),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor,constant: -20),
-            
-        ])
-    }
-    
-    private func setupStackView(){
-        contentView.addSubview(stackView)
-        stackView.axis = .vertical
-        stackView.backgroundColor = .clear
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ])
-        stackView.spacing = 16
-        setupHorizontalStackView()
-        setupTextView()
-        setupVerticalStackView()
-        setupDeleteButton()
-    }
-    
-    private func setupHorizontalStackView(){
-        view.addSubview(navBar)
-        NSLayoutConstraint.activate([
-            navBar.topAnchor.constraint(equalTo: view.topAnchor),
-            navBar.widthAnchor.constraint(equalTo: view.widthAnchor,constant: -32),
-            navBar.heightAnchor.constraint(equalToConstant: 56),
-            navBar.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
-        ])
-        navBar.saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
-        
-        navBar.cancellButton.addTarget(self, action: #selector(cancellButtonTapped), for: .touchUpInside)
-        
-    }
-    
-    private func setupTextView(){
-        textView.delegate = self
-        textView.layer.opacity = 0
-        stackView.addArrangedSubview(textView)
-        NSLayoutConstraint.activate([
-            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120),
-            textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            textView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-        ])
-        
-    }
-    
-    private func setupVerticalStackView(){
-        let verticalSV = UIStackView()
-        verticalSV.axis = .vertical
-        verticalSV.backgroundColor = UIColor(named: "BackSecondary")
-        verticalSV.translatesAutoresizingMaskIntoConstraints = false
-        stackView.addArrangedSubview(verticalSV)
-        NSLayoutConstraint.activate([
-            verticalSV.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            verticalSV.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-        ])
-        verticalSV.spacing = 0
-        verticalSV.distribution = .equalSpacing
-        verticalSV.layer.cornerRadius = 16
-        verticalSV.addArrangedSubview(importanceView)
-        verticalSV.addArrangedSubview(separatorFirst)
-        verticalSV.addArrangedSubview(colorPickerView)
-        verticalSV.addArrangedSubview(separatorSecond)
-        
-        colorPickerView.button.addTarget(self, action: #selector(colorPickerButtonPressed), for: .touchUpInside)
-        
-        verticalSV.addArrangedSubview(deadlineView)
-        optionalSeparator.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        verticalSV.addArrangedSubview(optionalSeparator)
-        optionalSeparator.layer.opacity = 0
-        
-        deadlineView.date_button.addTarget(self, action: #selector(showCalendar), for: .touchUpInside)
-        deadlineView.date_button.isHidden = true
-        datePicker.date = Date.tomorrow
-        deadlineView.switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
-        verticalSV.addArrangedSubview(datePicker)
-        datePicker.isHidden = true
-        datePicker.addTarget(self, action: #selector(datePickerHandler(sender:)), for: UIControl.Event.valueChanged)
-    }
-    
+  
     @objc
     func colorPickerButtonPressed(){
         self.present(colorPicker,animated: true)
@@ -262,26 +159,6 @@ class TaskViewController: UIViewController {
     @objc func datePickerHandler(sender: UIDatePicker) {
         let strDate = Formatter.date.string(from: datePicker.date)
         deadlineView.date_button.setTitle(strDate, for: .normal)
-    }
-    
-    private func setupDeleteButton(){
-        
-        deleteButton.backgroundColor = UIColor(named: "BackSecondary")
-        deleteButton.isEnabled = false
-        
-        deleteButton.setTitle("Удалить", for: .normal)
-        deleteButton.setTitleColor(UIColor(named: "LabelTertiary"), for: .disabled)
-        deleteButton.setTitleColor(UIColor(named: "ColorRed"), for: .normal)
-        deleteButton.translatesAutoresizingMaskIntoConstraints = false
-        deleteButton.layer.cornerRadius = 16
-        stackView.addArrangedSubview(deleteButton)
-        NSLayoutConstraint.activate([
-            deleteButton.heightAnchor.constraint(equalToConstant: 60),
-            deleteButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            deleteButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-        ])
-        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
-        
     }
     
     
@@ -428,6 +305,133 @@ extension TaskViewController:UITextViewDelegate{
     }
 }
 
+extension TaskViewController {
+    
+    private func setupScrollView(){
+        scrollView.backgroundColor = UIColor(named: "BackPrimary")
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.showsVerticalScrollIndicator = true
+        
+        view.addSubview(scrollView)
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,constant: 56),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+    }
+    
+    private func setupContentView(){
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentView)
+        NSLayoutConstraint.activate([
+            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor,constant: 20),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor,constant: -20),
+            
+        ])
+    }
+    
+    private func setupStackView(){
+        contentView.addSubview(stackView)
+        stackView.axis = .vertical
+        stackView.backgroundColor = .clear
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+        stackView.spacing = 16
+        setupHorizontalStackView()
+        setupTextView()
+        setupVerticalStackView()
+        setupDeleteButton()
+    }
+    
+    private func setupHorizontalStackView(){
+        view.addSubview(navBar)
+        NSLayoutConstraint.activate([
+            navBar.topAnchor.constraint(equalTo: view.topAnchor),
+            navBar.widthAnchor.constraint(equalTo: view.widthAnchor,constant: -32),
+            navBar.heightAnchor.constraint(equalToConstant: 56),
+            navBar.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
+        ])
+        navBar.saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+        
+        navBar.cancellButton.addTarget(self, action: #selector(cancellButtonTapped), for: .touchUpInside)
+        
+    }
+    
+    private func setupTextView(){
+        textView.delegate = self
+        textView.layer.opacity = 0
+        stackView.addArrangedSubview(textView)
+        NSLayoutConstraint.activate([
+            textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 120),
+            textView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            textView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+        ])
+        
+    }
+    
+    private func setupVerticalStackView(){
+        let verticalSV = UIStackView()
+        verticalSV.axis = .vertical
+        verticalSV.backgroundColor = UIColor(named: "BackSecondary")
+        verticalSV.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(verticalSV)
+        NSLayoutConstraint.activate([
+            verticalSV.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            verticalSV.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+        ])
+        verticalSV.spacing = 0
+        verticalSV.distribution = .equalSpacing
+        verticalSV.layer.cornerRadius = 16
+        verticalSV.addArrangedSubview(importanceView)
+        verticalSV.addArrangedSubview(separatorFirst)
+        verticalSV.addArrangedSubview(colorPickerView)
+        verticalSV.addArrangedSubview(separatorSecond)
+        
+        colorPickerView.button.addTarget(self, action: #selector(colorPickerButtonPressed), for: .touchUpInside)
+        
+        verticalSV.addArrangedSubview(deadlineView)
+        optionalSeparator.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        verticalSV.addArrangedSubview(optionalSeparator)
+        optionalSeparator.layer.opacity = 0
+        
+        deadlineView.date_button.addTarget(self, action: #selector(showCalendar), for: .touchUpInside)
+        deadlineView.date_button.isHidden = true
+        datePicker.date = Date.tomorrow
+        deadlineView.switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
+        verticalSV.addArrangedSubview(datePicker)
+        datePicker.isHidden = true
+        datePicker.addTarget(self, action: #selector(datePickerHandler(sender:)), for: UIControl.Event.valueChanged)
+    }
+    
+    private func setupDeleteButton(){
+        
+        deleteButton.backgroundColor = UIColor(named: "BackSecondary")
+        deleteButton.isEnabled = false
+        
+        deleteButton.setTitle("Удалить", for: .normal)
+        deleteButton.setTitleColor(UIColor(named: "LabelTertiary"), for: .disabled)
+        deleteButton.setTitleColor(UIColor(named: "ColorRed"), for: .normal)
+        deleteButton.translatesAutoresizingMaskIntoConstraints = false
+        deleteButton.layer.cornerRadius = 16
+        stackView.addArrangedSubview(deleteButton)
+        NSLayoutConstraint.activate([
+            deleteButton.heightAnchor.constraint(equalToConstant: 60),
+            deleteButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            deleteButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+        ])
+        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+        
+    }
+    
+}
 
 
 extension TaskViewController: UIColorPickerViewControllerDelegate {

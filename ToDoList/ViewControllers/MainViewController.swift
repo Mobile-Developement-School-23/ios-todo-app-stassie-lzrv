@@ -30,12 +30,6 @@ class MainViewController: UIViewController{
     var switcher = UISwitch()
     let labelDB = UILabel()
     
-    private let alert: UIAlertController = {
-        let alert = UIAlertController(title: "", message: "", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
-        return alert
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "BackPrimary")
@@ -66,62 +60,7 @@ class MainViewController: UIViewController{
             didUpdate()
         }
     }
-    private func setupStackView(){
-        stackView.axis = .horizontal
-        stackView.distribution = .fillProportionally
-        let label = UILabel()
-        label.text = "Выполнено - 0"
-        label.textColor = UIColor(named: "LabelTertiary")
-        label.font = .systemFont(ofSize: 15)
-        stackView.addArrangedSubview(label)
-        let button = UIButton()
-        button.setTitle("Показать", for: .normal)
-        button.titleLabel?.font = .boldSystemFont(ofSize: 15)
-        button.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
-        button.addTarget(self, action: #selector(showButtonTapped), for: .touchUpInside)
-        stackView.addArrangedSubview(button)
-        let sv = UIStackView()
-        sv.axis = .vertical
-        sv.alignment = .center
-        sv.spacing = 2
-        labelDB.text = "CoreData"
-        labelDB.textColor = UIColor(named: "LabelTertiary")
-        labelDB.font = .systemFont(ofSize: 15)
-        sv.addArrangedSubview(labelDB)
-        sv.addArrangedSubview(switcher)
-        switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
-        
-        stackView.addArrangedSubview(sv)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor,constant: 32),
-            stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor,constant: -32),
-            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-        ])
-        
-    }
-    
-    private func setupAddButton(){
-        let button = UIButton()
-        button.setImage(UIImage(named: "plus"), for: .normal)
-        button.contentVerticalAlignment = .fill
-        button.contentHorizontalAlignment = .fill
-        button.layer.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.4).cgColor
-        button.layer.shadowOffset = CGSize(width: 0.0, height: 0.0)
-        button.layer.shadowOpacity = 1.0
-        button.layer.shadowRadius = 20
-        
-        view.addSubview(button)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            button.widthAnchor.constraint(equalToConstant: 44),
-            button.heightAnchor.constraint(equalToConstant: 44),
-            button.pinCenterX(to: view),
-            button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor,constant: -20)
-        ])
-        
-        button.addTarget(self, action: #selector(openNewTaskVC), for: .touchUpInside)
-    }
+   
     
     @objc
     private func openNewTaskVC(){
@@ -146,29 +85,7 @@ class MainViewController: UIViewController{
         
         
     }
-    
-    func setupTableView(){
-        tableView.backgroundColor = .clear
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(CustomCell.self, forCellReuseIdentifier: CustomCell.identifier)
-        tableView.register(NewCustomCell.self, forCellReuseIdentifier: NewCustomCell.identifier)
-        tableView.layer.cornerRadius = 16
-        tableView.clipsToBounds = true
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.separatorInset = .zero
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 52, bottom: 0, right: 0)
-        
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: stackView.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-        
-    }
-    
-    
+ 
     
     private func openTaskView(with model: TodoItem? = nil){
         guard let model = model else {
@@ -365,6 +282,87 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource{
     }
 }
 
+// MARK: UI
+extension MainViewController {
+    
+    func setupTableView(){
+        tableView.backgroundColor = .clear
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(CustomCell.self, forCellReuseIdentifier: CustomCell.identifier)
+        tableView.register(NewCustomCell.self, forCellReuseIdentifier: NewCustomCell.identifier)
+        tableView.layer.cornerRadius = 16
+        tableView.clipsToBounds = true
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.separatorInset = .zero
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 52, bottom: 0, right: 0)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: stackView.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        
+    }
+    
+    private func setupStackView(){
+        stackView.axis = .horizontal
+        stackView.distribution = .fillProportionally
+        let label = UILabel()
+        label.text = "Выполнено - 0"
+        label.textColor = UIColor(named: "LabelTertiary")
+        label.font = .systemFont(ofSize: 15)
+        stackView.addArrangedSubview(label)
+        let button = UIButton()
+        button.setTitle("Показать", for: .normal)
+        button.titleLabel?.font = .boldSystemFont(ofSize: 15)
+        button.setTitleColor(UIColor(named: "ColorBlue"), for: .normal)
+        button.addTarget(self, action: #selector(showButtonTapped), for: .touchUpInside)
+        stackView.addArrangedSubview(button)
+        let sv = UIStackView()
+        sv.axis = .vertical
+        sv.alignment = .center
+        sv.spacing = 2
+        labelDB.text = "CoreData"
+        labelDB.textColor = UIColor(named: "LabelTertiary")
+        labelDB.font = .systemFont(ofSize: 15)
+        sv.addArrangedSubview(labelDB)
+        sv.addArrangedSubview(switcher)
+        switcher.addTarget(self, action: #selector(switcherPressed), for: .valueChanged)
+        
+        stackView.addArrangedSubview(sv)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor,constant: 32),
+            stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor,constant: -32),
+            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+        ])
+        
+    }
+    
+    private func setupAddButton(){
+        let button = UIButton()
+        button.setImage(UIImage(named: "plus"), for: .normal)
+        button.contentVerticalAlignment = .fill
+        button.contentHorizontalAlignment = .fill
+        button.layer.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.4).cgColor
+        button.layer.shadowOffset = CGSize(width: 0.0, height: 0.0)
+        button.layer.shadowOpacity = 1.0
+        button.layer.shadowRadius = 20
+        
+        view.addSubview(button)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: 44),
+            button.heightAnchor.constraint(equalToConstant: 44),
+            button.pinCenterX(to: view),
+            button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor,constant: -20)
+        ])
+        
+        button.addTarget(self, action: #selector(openNewTaskVC), for: .touchUpInside)
+    }
+}
 
 extension MainViewController: UpdateDelegate{
     func didUpdate(){
@@ -373,3 +371,5 @@ extension MainViewController: UpdateDelegate{
         updateHeader()
     }
 }
+
+

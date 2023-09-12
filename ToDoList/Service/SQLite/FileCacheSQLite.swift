@@ -47,8 +47,10 @@ class FileCacheSQLite: FileCacheProtocol {
         self.db = db
         self.table = table
         
-        
-        if(!FileManager.default.fileExists(atPath: "\(path)/db.sqlite3")){
+        do{
+           try db.scalar(table.exists)
+            print("exist")
+        } catch{
             configureDB()
         }
         
